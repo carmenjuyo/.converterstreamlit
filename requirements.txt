@@ -4,3 +4,5 @@ openpyxl
 numpy
 fuzzywuzzy
 streamlit_sortables
+streamlit_tags
+datetime

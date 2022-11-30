@@ -1,5 +1,7 @@
-from datetime import datetime as dt
+from datetime import datetime
+import time
 from streamlit_sortables import sort_items
+from streamlit_tags import st_tags
 from fuzzywuzzy import process
 import pandas as pd
 import streamlit as st
@@ -32,6 +34,7 @@ with st.container():
     with r_column:
         st.write("")
 
+# The 2 different columns for the different files
 with st.container():
 
     st.write("---")
@@ -59,6 +62,7 @@ with st.container():
             cols = st.multiselect('select sheets:', tabs)
             
             try:
+
                 st.write('You selected:', cols)
 
                 # https://www.datacamp.com/tutorial/fuzzy-string-python
@@ -73,9 +77,18 @@ with st.container():
 
                 st.write(Ratios)
                 st.write(highest)
+
+                for col in cols:
+                    str2Match = cols[col]
+                    strOptions = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
+                    
+                    highest = process.extractOne(str2Match,strOptions)
+                    print(highest)
             
             except:
-                st.warning("No sheets selected.")
+                with st.empty():
+                    while len(cols) == 0:
+                        st.subheader("⚠️ No sheets selected.")
 
     with right_column:
         st.header("Format file JUYO")
@@ -101,14 +114,76 @@ with st.container():
             st.write(shape[1], ' used of total columns: ', shape1[1])
 
             st.write(df1.columns)
-            items = df1.columns.to_list()
-
-            # https://github.com/ohtaman/streamlit-sortables
-            sorted_items = sort_items(items, direction='vertical')
-
-            lst = []
-            x = sorted_items
-            lst.append(x) 
-            st.write(lst) 
 
 st.write("---")
+
+try:
+    keywords = st_tags(
+        label='# Enter segments in the order they appear in your Excel file:',
+        text='Press enter to add more',
+        suggestions=['leisure', 'Leisure', 'groups', 
+                    'Groups', 'group', 'Group', 
+                    'Business', 'business', 'corporate',
+                    'Direct', 'direct', 'Indirect', 'indirect'
+                    'individual', 'packages', 'complementary', 'house'
+                    ],
+        maxtags = shape[1],
+        key='1')
+    
+    st.write(len(keywords), ' segments of ', shape[1], ' entered.')
+    st.write(keywords)
+
+    if len(keywords) == shape[1]:
+
+        with st.container():
+
+            st.write("---")
+
+            left_column, right_column = st.columns(2)
+
+            with left_column:
+                # https://github.com/ohtaman/streamlit-sortables
+                
+                st.markdown("The segments on how the should be.")
+                sorted_items1 = sort_items(df1.columns.to_list(), direction='vertical')
+
+            with right_column:
+                st.markdown("Reorder the segments is right order.")
+                sorted_items2 = sort_items(keywords, direction='vertical')
+
+        year1 = datetime.today().year
+
+        year = st.select_slider(
+            'Select starting year',
+            options=range(year1 - 2, year1 + 2),value=year1)
+
+        st.write(year)
+
+        if year:
+            terminology = st_tags(
+            label='# Enter the terminology used in Excel file (e.g.: Rn & REV):',
+            text='Press enter to add more',
+            suggestions=['rn', 'RN', 'Rn', 
+                        'Rev', 'REV', 'rev', 
+                        'ADR', 'Adr', 'adr',
+                        ],
+            maxtags = 2,
+            key='2')
+        
+            st.write(len(terminology), ' terminology of ', 2, ' entered.')
+            st.write(terminology)
+
+        if len(terminology) == 2:
+            calculate = st.radio(
+                "is the data stored as Rn & Rev or Rn & ADR?",
+                ('Rn & Rev', 'Rn & ADR', 'No disered option'))
+
+            if calculate == 'Rn & Rev':
+                st.write('You selected Rn & Rev.')
+            elif calculate == 'Rn & ADR':
+                st.write('You selected Rn & ADR.')
+            else:
+                st.write("You didn't select anything, if disered combination isn't present, please contact JUYO.")
+
+except:
+    print('waiting...')
