@@ -17,9 +17,13 @@ st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_cl
 hide_default_format = """
        <style>
        footer {visibility: hidden;}
+       header {visibility: hidden;}
        </style>
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
+
+def run_process():
+    print(f"starting process...")
 
 # Header of the page
 with st.container():
@@ -89,7 +93,7 @@ with st.container():
             
             except:
                 with st.empty():
-                    while len(cols) == 0:
+                    if len(cols) == 0:
                         st.subheader("⚠️ No sheets selected.")
 
     with right_column:
@@ -189,3 +193,5 @@ try:
 
 except:
     print('waiting...')
+
+if st.button("Start converting process."): run_process()
