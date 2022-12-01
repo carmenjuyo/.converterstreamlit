@@ -27,6 +27,11 @@ def run_process():
 
         print(f"starting process...")
 
+        rn_c = 0
+        rv_c = 0
+        cRngn = []
+        cRngv = []
+
         iSegments = []
         iMonths = []
         iTerm = []
@@ -61,9 +66,6 @@ def run_process():
 
             ws = wb[(iMonths[x])]
 
-            number_rows = ws.max_row
-            number_columns = ws.max_column
-
             for z in sMonths:
                 try:
                     iDays[x].index(z)
@@ -78,29 +80,48 @@ def run_process():
             elif tMonth == 'Feb': mDay = 28
             else: mDay = 30
             
+            # //TODO duidelijke error handling toevoegen.
+
             if storage == 'Rows':
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
                         if i == int(row_n):
                             if "Rms" == ws.cell(i,j).value:
+                                rn_c = rn_c + 1
+                                cRngn.append(f"Rms {ws.cell(i,j)}")
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
                                         iDataRn.append(cell.value)
                                 iDataRn.append("Rms")
-
-                # //TODO ERrOR TOEVOEGEN!!!!!!!!!!! wannneer er minder RN of REV zijn dan segment.
-                #  Zeggen welke wel zijn meegenomen en welke dus niet per sheet.
+                
+                if rn_c != range(len(iMonths)):
+                    
+                    st.error(f"""
+                        {len(iSegments)} segments were counted / selected, but only {rn_c} data entry points were accesses.
+                        See here the overview of the range of the succeeded data entries:
+                        """, icon="❌")
+                    st.json(cRngn, expanded=True)
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
                         if i == int(row_n):
                             if "ZAR" == ws.cell(i,j).value:
-                                print(f"found {ws.cell(i,j)}")
+                                rv_c = rv_c + 1
+                                cRngv.append(f"ZAR {ws.cell(i,j)}")
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
                                         iDataRv.append(round(cell.value,2))
                                 iDataRv.append("ZAR")
+
+                if rv_c != range(len(iMonths)):
+
+                    st.error(f"""
+                        {len(iSegments)} segments were counted / selected, but only {rv_c} data entry points were accesses.
+                        See here the overview of the range of the succeeded data entries:
+                        """,icon="❌")
+                    st.json(cRngv, expanded=True)
+                    break
 
             else:
                 
@@ -292,6 +313,8 @@ try:
                 row_n = st.text_input("in which column can the terminology be found?")
                 row_n = ord(row_n) - 96
                 print(row_n)
+
+            
 
 except:
     print('waiting...')
