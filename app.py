@@ -1,5 +1,6 @@
 from datetime import datetime
 import time
+from openpyxl.utils.cell import get_column_letter
 from streamlit_sortables import sort_items
 from streamlit_tags import st_tags
 from fuzzywuzzy import process
@@ -25,13 +26,14 @@ def run_process():
     with st.spinner('runnning process...'):
 
         print(f"starting process...")
-        
+
         iSegments = []
         iMonths = []
         iTerm = []
         iDays = []
         iSort = []
-        iData = []
+        iDataRn = []
+        iDataRv = []
         sMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
 
         for x in sorted_items2: iSegments.append(x)
@@ -50,7 +52,7 @@ def run_process():
         print(f"segments: {iSegments}")
         print(f"sheets: {iMonths}")
         print(f"terminology: {iTerm}")
-        print(f"months: {iDays[:3]}") # Use if in to see if month contains. https://stackabuse.com/python-check-if-string-contains-substring/
+        print(f"months: {iDays}") # Use if in to see if month contains. https://stackabuse.com/python-check-if-string-contains-substring/
         print(f"sorting: {iSort}")
 
         for x in range(len(iMonths)):
@@ -58,6 +60,9 @@ def run_process():
             wb = openpyxl.load_workbook(uploaded_file_CLIENT, data_only=True)
 
             ws = wb[(iMonths[x])]
+
+            number_rows = ws.max_row
+            number_columns = ws.max_column
 
             for z in sMonths:
                 try:
@@ -77,15 +82,35 @@ def run_process():
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
+
                         if i == int(row_n):
+
                             if "Rms" == ws.cell(i,j).value:
-                                #print(f"found {ws.cell(i,j)}")
 
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
-                                        iData.append(cell.value)# = [cell.value]
-                                        #print(cell.value)
-                                iData.append("Rms")
+                                        iDataRn.append(cell.value)
+                                iDataRn.append("Rms")
+                
+                for i in range(number_columns):
+                    for k in range(number_rows):
+                        cell = str(ws[get_column_letter(i+1)+str(k+1)].value)
+                        if str(cell) == 'ZAR':
+                            print(f"Location found: {ws.cell}")
+
+                # //TODO ERrOR TOEVOEGEN!!!!!!!!!!! wannneer er minder RN of REV zijn dan segment.
+                #  Zeggen welke wel zijn meegenomen en welke dus niet per sheet.
+
+                # for i in range(1, ws.max_row + 1):
+                #     for j in range(1, ws.max_column + 1):
+                #         if i == int(row_n):
+                #             if "ZAR" == ws.cell(i,j).value:
+                #                 print(f"found {ws.cell(i,j)}")
+                #                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
+                #                     for cell in row:
+                #                         iDataRv.append(round(cell.value,2))
+                #                 iDataRv.append("ZAR")
+
             else:
                 
                 for i in range(1, ws.max_row + 1):
@@ -95,8 +120,13 @@ def run_process():
                                 print(f"found {ws.cell(i,j)}")
 
 
-            iData.append(iMonths[x])
-            print(iData)
+            iDataRn.append(iMonths[x])
+            iDataRv.append(iMonths[x])
+            print(iDataRn)
+            print(iDataRv)
+            st.json(iDataRn, expanded=True)
+            st.json(iDataRv, expanded=True)
+
     st.success('Done!')
     
 
