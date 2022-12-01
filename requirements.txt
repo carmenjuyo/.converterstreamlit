@@ -6,4 +6,3 @@ fuzzywuzzy
 streamlit_sortables
 streamlit_tags
 datetime
-openpyxl.utils.cell
