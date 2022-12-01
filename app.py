@@ -82,34 +82,25 @@ def run_process():
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
-
                         if i == int(row_n):
-
                             if "Rms" == ws.cell(i,j).value:
-
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
                                         iDataRn.append(cell.value)
                                 iDataRn.append("Rms")
-                
-                for i in range(number_columns):
-                    for k in range(number_rows):
-                        cell = str(ws[get_column_letter(i+1)+str(k+1)].value)
-                        if str(cell) == 'ZAR':
-                            print(f"Location found: {ws.cell}")
 
                 # //TODO ERrOR TOEVOEGEN!!!!!!!!!!! wannneer er minder RN of REV zijn dan segment.
                 #  Zeggen welke wel zijn meegenomen en welke dus niet per sheet.
 
-                # for i in range(1, ws.max_row + 1):
-                #     for j in range(1, ws.max_column + 1):
-                #         if i == int(row_n):
-                #             if "ZAR" == ws.cell(i,j).value:
-                #                 print(f"found {ws.cell(i,j)}")
-                #                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
-                #                     for cell in row:
-                #                         iDataRv.append(round(cell.value,2))
-                #                 iDataRv.append("ZAR")
+                for i in range(1, ws.max_row + 1):
+                    for j in range(1, ws.max_column + 1):
+                        if i == int(row_n):
+                            if "ZAR" == ws.cell(i,j).value:
+                                print(f"found {ws.cell(i,j)}")
+                                for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
+                                    for cell in row:
+                                        iDataRv.append(round(cell.value,2))
+                                iDataRv.append("ZAR")
 
             else:
                 
