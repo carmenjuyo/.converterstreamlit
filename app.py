@@ -8,6 +8,7 @@ import pandas as pd
 import streamlit as st
 import numpy as np
 import openpyxl
+import xlsxwriter
 
 # //TODO install warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
 
@@ -38,7 +39,9 @@ def run_process():
         iDays = []
         iSort = []
         iDataRn = []
+        iDataRnT = []
         iDataRv = []
+        iDataRvT = []
         sMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
 
         for x in sorted_items2: iSegments.append(x)
@@ -54,11 +57,11 @@ def run_process():
         
         for x in keywords: iSort.append(x)
 
-        print(f"segments: {iSegments}")
-        print(f"sheets: {iMonths}")
-        print(f"terminology: {iTerm}")
-        print(f"months: {iDays}") # Use if in to see if month contains. https://stackabuse.com/python-check-if-string-contains-substring/
-        print(f"sorting: {iSort}")
+        print(f"iSegments: {iSegments}")
+        print(f"sheets (iMonths): {iMonths}")
+        print(f"terminology (iTerm): {iTerm}")
+        print(f"months (iDays): {iDays}")
+        print(f"sorting (iSort): {iSort}")
 
         for x in range(len(iMonths)):
 
@@ -96,7 +99,10 @@ def run_process():
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
                                         iDataRn.append(cell.value)
-                                iDataRn.append("Rms")
+                                
+                                iDataRnT.append(iDataRn)
+                                iDataRn = []
+                                
                             if rn_c == len(iSegments):
                                 break
                 
@@ -117,7 +123,10 @@ def run_process():
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
                                         iDataRv.append(round(cell.value,2))
-                                iDataRv.append("ZAR")
+                                
+                                iDataRvT.append(iDataRv)
+                                iDataRv = []
+
                             if rv_c == len(iSegments):
                                 break
 
@@ -162,9 +171,9 @@ def run_process():
                                 cRngv.append(f"Rms {ws.cell(i,j)}")
                                 for column in ws.iter_rows(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
                                     for cell in column:
-                                        iDataRv.append(round(cell.value,2))
-                                iDataRn.append("ZAR")
-                            if rV_c == len(iSegments):
+                                        iDataRv.append([round(cell.value,2)])
+                                iDataRv.append("ZAR")
+                            if rv_c == len(iSegments):
                                 break
 
                 if rv_c != len(iSegments):
@@ -175,16 +184,76 @@ def run_process():
                         """, icon="❌")
                     st.json(cRngn, expanded=True)
 
-            iDataRn.append(iMonths[x])
-            iDataRv.append(iMonths[x])
+            st.json(iDataRnT, expanded=False)
 
-            st.json(iDataRn, expanded=True)
-            st.json(iDataRv, expanded=True)
-
+            print("---")
+            print(iSort)
+            print(iSegments)
+        a = 0 
         for x in range(len(iMonths)):
-            # Process of reordering the segments.
-            pass
 
+            for i in range(len(iSegments)):
+
+                strFind = iSegments[i]
+
+                for y in range(len(iSort)):
+
+                    strStored = iSort[y]
+
+                    #print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
+
+                    if strFind == strStored:
+                        
+                        if i == y:
+                            print(f"-- Level & Name match: {strFind} = {i}")
+                        
+                        else:
+                            print(f"- Name match: {strFind} : {i} - {y}")
+                            print(f"- reordering...")
+                            
+                            arrTemp = iDataRnT[y + a]
+                            arrTempV = iDataRvT[y + a]
+
+                            iDataRnT[y + a] = iDataRnT[i + a]
+                            iDataRvT[y + a] = iDataRvT[i + a]
+
+                            iDataRnT[i + a] = arrTemp
+                            iDataRvT[i + a] = arrTempV
+
+                            temp = iSort[i]
+
+                            iSort[i] = iSegments[i]
+                            iSort[y] = temp
+            
+            if x == 0:
+                a = range(len(iSort))
+            else:
+                a = a + range(len(iSort))
+
+            print(iSort)
+            print(iSegments)
+
+            st.json(iDataRnT, expanded=False)
+            
+            # //TODO manier verzinnen voor meerdere maanden,
+            # //TODO column met date invoegen
+            # //TODO laat columnen leeg zijn in dataframe
+
+            d =[]
+
+            for x in range(len(iDataRnT)):
+                d.append(iDataRnT[x])
+                d.append(iDataRvT[x])
+            
+            df2 = np.array(d).T
+
+            df2 = pd.DataFrame(data=df2)#, columns=all_columns)
+            print(df2)
+
+            #writer = pd.ExcelWriter('test.xlsx', engine='xlsxwriter')            
+            #df2.to_excel(writer, sheet_name='sheet0', startcol=1 ,startrow=1, header=False, index=False)
+            #writer.save()
+            
     st.success('Process ran!')
     
 
@@ -265,6 +334,8 @@ with st.container():
         if uploaded_file_JUYO:
             
             df1 = pd.read_excel(uploaded_file_JUYO)
+
+            all_columns = df1.columns
             st.markdown("### Data preview")
 
             shape1 = df1.shape
@@ -362,16 +433,22 @@ try:
                 ('Rows', 'Columns'))
 
             if storage == 'Rows':
-                row_n = st.text_input("in which row can the terminology be found?")
+                row_n = st.text_input("in which row can the terminology be found? (press enter when ready)")
                 #row_n = row_n + 1
+                if row_n:
+                    if st.checkbox("want to store the input for future reference?"):
+                        if st.button("Start converting process."): run_process()
             else:
                 row_n = st.text_input("in which column can the terminology be found?")
                 row_n = ord(row_n) - 96
+                if row_n:
+                    if st.checkbox("want to store the input for future reference? (press enter when ready)"):
+                        if st.button("Start converting process."): run_process()
                 print(row_n)
+
 
             
 
 except:
     print('waiting...')
 
-if st.button("Start converting process."): run_process()
