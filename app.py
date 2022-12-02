@@ -66,6 +66,9 @@ def run_process():
 
             ws = wb[(iMonths[x])]
 
+            rn_c = 0
+            rv_c = 0
+
             for z in sMonths:
                 try:
                     iDays[x].index(z)
@@ -94,8 +97,10 @@ def run_process():
                                     for cell in row:
                                         iDataRn.append(cell.value)
                                 iDataRn.append("Rms")
+                            if rn_c == len(iSegments):
+                                break
                 
-                if rn_c != range(len(iMonths)):
+                if rn_c != len(iSegments):
                     
                     st.error(f"""
                         {len(iSegments)} segments were counted / selected, but only {rn_c} data entry points were accesses.
@@ -113,8 +118,10 @@ def run_process():
                                     for cell in row:
                                         iDataRv.append(round(cell.value,2))
                                 iDataRv.append("ZAR")
+                            if rv_c == len(iSegments):
+                                break
 
-                if rv_c != range(len(iMonths)):
+                if rv_c != len(iSegments):
 
                     st.error(f"""
                         {len(iSegments)} segments were counted / selected, but only {rv_c} data entry points were accesses.
@@ -122,24 +129,63 @@ def run_process():
                         """,icon="❌")
                     st.json(cRngv, expanded=True)
                     break
-
+                    
+            # //TODO Make the process for columns (M&T)
             else:
                 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
                         if j == int(row_n):
                             if "Rms" == ws.cell(i,j).value:
-                                print(f"found {ws.cell(i,j)}")
+                                rn_c = rn_c + 1
+                                cRngn.append(f"Rms {ws.cell(i,j)}")
+                                for column in ws.iter_rows(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
+                                    for cell in column:
+                                        iDataRn.append(cell.value)
+                                iDataRn.append("Rms")
+                            if rn_c == len(iSegments):
+                                break
 
+                if rn_c != len(iSegments):
+                    
+                    st.error(f"""
+                        {len(iSegments)} segments were counted / selected, but only {rn_c} data entry points were accesses.
+                        See here the overview of the range of the succeeded data entries:
+                        """, icon="❌")
+                    st.json(cRngn, expanded=True)
+
+                for i in range(1, ws.max_row + 1):
+                    for j in range(1, ws.max_column + 1):
+                        if j == int(row_n):
+                            if "ZAR" == ws.cell(i,j).value:
+                                rv_c = rv_c + 1
+                                cRngv.append(f"Rms {ws.cell(i,j)}")
+                                for column in ws.iter_rows(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
+                                    for cell in column:
+                                        iDataRv.append(round(cell.value,2))
+                                iDataRn.append("ZAR")
+                            if rV_c == len(iSegments):
+                                break
+
+                if rv_c != len(iSegments):
+                    
+                    st.error(f"""
+                        {len(iSegments)} segments were counted / selected, but only {rn_c} data entry points were accesses.
+                        See here the overview of the range of the succeeded data entries:
+                        """, icon="❌")
+                    st.json(cRngn, expanded=True)
 
             iDataRn.append(iMonths[x])
             iDataRv.append(iMonths[x])
-            print(iDataRn)
-            print(iDataRv)
+
             st.json(iDataRn, expanded=True)
             st.json(iDataRv, expanded=True)
 
-    st.success('Done!')
+        for x in range(len(iMonths)):
+            # Process of reordering the segments.
+            pass
+
+    st.success('Process ran!')
     
 
 # Header of the page
@@ -249,7 +295,16 @@ try:
     st.write(len(keywords), ' segments of ', shape[1], ' entered.')
     st.write(keywords)
 
-    if len(keywords) == shape[1]:
+    if len(keywords) == shape[1] - 1:
+        st.warning('Do you miss 1 segment that is placed on the end of the JUYO segments? Read this 👇')
+        st.write("""
+            If you miss a segments in your segments file, and it is placed on the end of the JUYO segments file.
+
+            You can check this checkbox true, and the last segments  will be filled in with zero's.
+            """)
+        e_segments = st.checkbox('Extra (empty!) segment on last place?')
+
+    if len(keywords) == shape[1] or e_segments:
 
         with st.container():
 
