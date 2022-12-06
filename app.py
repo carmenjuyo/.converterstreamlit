@@ -190,9 +190,9 @@ def run_process():
 
         print("---")
 
-        a = 0 
+        #a = 0 
         for x in range(len(iMonths)):
-
+            a = 0
             for i in range(len(iSegments)):
 
                 strFind = iSegments[i]
@@ -303,7 +303,6 @@ def run_process():
         wb.save('NameFile.xlsx')
 
         df3 = pd.read_excel('NameFile.xlsx')
-        #df3.to_excel("test.xlsx")
 
         st.dataframe(df3)
 
