@@ -8,7 +8,10 @@ import pandas as pd
 import streamlit as st
 import numpy as np
 import openpyxl
+from io import BytesIO
 import xlsxwriter
+import traceback
+import json
 
 # //TODO install warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
 
@@ -79,6 +82,7 @@ def run_process():
                     pass
                 else:
                     tMonth = z
+                    if x == 0: eMonth = z
 
             print(f'Current month: {tMonth}')
             if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
@@ -184,11 +188,8 @@ def run_process():
                         """, icon="❌")
                     st.json(cRngn, expanded=True)
 
-            st.json(iDataRnT, expanded=False)
+        print("---")
 
-            print("---")
-            print(iSort)
-            print(iSegments)
         a = 0 
         for x in range(len(iMonths)):
 
@@ -226,35 +227,95 @@ def run_process():
                             iSort[y] = temp
             
             if x == 0:
-                a = range(len(iSort))
+                a = len(iSort)
             else:
-                a = a + range(len(iSort))
+                a = a + len(iSort)
+        
+        st.json(iDataRnT, expanded=False)
 
-            print(iSort)
-            print(iSegments)
+        # //TODO manier verzinnen voor meerdere maanden,
+        # //TODO column met date invoegen
+        # //TODO laat columnen leeg zijn in dataframe
 
-            st.json(iDataRnT, expanded=False)
-            
-            # //TODO manier verzinnen voor meerdere maanden,
-            # //TODO column met date invoegen
-            # //TODO laat columnen leeg zijn in dataframe
+        d =[]
 
-            d =[]
+        for x in range(len(iDataRnT)):
+            d.append(iDataRnT[x])
+            d.append(iDataRvT[x])
 
-            for x in range(len(iDataRnT)):
-                d.append(iDataRnT[x])
-                d.append(iDataRvT[x])
-            
-            df2 = np.array(d).T
+        df2 = pd.DataFrame(data=d)
 
-            df2 = pd.DataFrame(data=df2)#, columns=all_columns)
-            print(df2)
+        df2 = df2.T
 
-            #writer = pd.ExcelWriter('test.xlsx', engine='xlsxwriter')            
-            #df2.to_excel(writer, sheet_name='sheet0', startcol=1 ,startrow=1, header=False, index=False)
-            #writer.save()
-            
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.title='test'
+
+        y = 1
+        for x in range(len(all_columns)):
+            sheet.cell(row=1, column=y).value=all_columns[x]
+            y =y + 1
+
+        if len(iSegments) == shape[1]: # Same amount of segments
+            #print(f"{len(iSegments)} - {(shape[1])}")
+            pass
+        elif len(iSegments) == (shape[1] - 1): # missing 1 segment
+            #colums_needed = 
+            #print(f"{len(iSegments)} - {(shape[1])}")
+            pass
+
+        x = 2 # COLUMN
+        y = 2 # ROW
+        t = 2 # ROW
+        s = 1 # SEGMENTS
+    
+        for i in range(len(iDataRnT)):
+
+            for z in range(len(iDataRnT[i])):
+
+                sheet.cell(row=y, column=x).value=iDataRnT[i][z]
+                sheet.cell(row=y, column=x+1).value=iDataRvT[i][z]
+                y = y + 1
+
+            if s == len(iSegments):
+                x = 2
+                s = 1
+                t = 2 + (len(iDataRnT[i]))
+            else:
+                s = s + 1
+                x = x + 2
+                y = t 
+
+        datetime_object = datetime.strptime(eMonth, "%b")
+        month_number = datetime_object.month
+        print(month_number)
+
+        datelist = pd.date_range(datetime(year, month_number, 1), periods=sheet.max_row - 1).to_pydatetime().tolist()
+        
+        i = 2
+        for x in range(len(datelist)):
+            sheet.cell(row=i, column=1).value=datelist[x]
+            i = i + 1
+
+        for cell in sheet["A"]:
+            cell.number_format = "YYYY/MM/DD"
+        
+        wb.save('NameFile.xlsx')
+
+        df3 = pd.read_excel('NameFile.xlsx')
+        #df3.to_excel("test.xlsx")
+
+        st.dataframe(df3)
+
     st.success('Process ran!')
+
+    with open("NameFile.xlsx", "rb") as file:
+        st.download_button(
+            label="click me to download excel",
+            data=file,
+            file_name=uploaded_file_JUYO,
+            mime="application/octet-stream"
+            )
     
 
 # Header of the page
@@ -292,7 +353,7 @@ with st.container():
             uploaded_file_CLIENT = 'Spier Budget Business Mix 2022I2023 (1).xlsx'
 
         if uploaded_file_CLIENT:
-            
+
             df = pd.read_excel(uploaded_file_CLIENT)
             st.markdown("### Select wanted sheets for conversion.")
             tabs = pd.ExcelFile(uploaded_file_CLIENT).sheet_names
@@ -446,9 +507,8 @@ try:
                         if st.button("Start converting process."): run_process()
                 print(row_n)
 
+#except Exception as e: print(e)
+except Exception:
+    traceback.print_exc()
 
-            
-
-except:
-    print('waiting...')
-
+#st.button("Start converting process."): run_process()
