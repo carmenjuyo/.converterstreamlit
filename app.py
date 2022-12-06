@@ -190,9 +190,10 @@ def run_process():
 
         print("---")
 
-        #a = 0 
+        # FIXME sorting array doesn't work after 1 iMonths
+        a = 0
         for x in range(len(iMonths)):
-            a = 0
+            
             for i in range(len(iSegments)):
 
                 strFind = iSegments[i]
@@ -201,7 +202,7 @@ def run_process():
 
                     strStored = iSort[y]
 
-                    #print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
+                    print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
 
                     if strFind == strStored:
                         
@@ -225,17 +226,20 @@ def run_process():
 
                             iSort[i] = iSegments[i]
                             iSort[y] = temp
+
+                        time.sleep(0.5)
             
             if x == 0:
                 a = len(iSort)
+                print(f"a = {a}")
             else:
                 a = a + len(iSort)
-        
-        st.json(iDataRnT, expanded=False)
+                print(f"a = {a}")
 
-        # //TODO manier verzinnen voor meerdere maanden,
-        # //TODO column met date invoegen
-        # //TODO laat columnen leeg zijn in dataframe
+            iSort.clear()
+            for z in keywords: iSort.append(z)
+
+        st.json(iDataRnT, expanded=False)
 
         d =[]
 
