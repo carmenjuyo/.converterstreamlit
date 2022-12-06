@@ -515,21 +515,26 @@ try:
                 skip_term = st.checkbox('Want to skip terminology on certain places?')
 
                 if skip_term:
-                    Skipper = st_tags(
-                        label='#### TEST!!! to skip terminology:',
-                        text='Press enter to add more',
-                        suggestions=['1', '2', '3', 
-                                    '4', '5', '6'],
-                        maxtags = 5,
-                        key='3')
+                    #FIXME Dit moet na row of column kiezen komen! Goed nadenken hoe dit was ingericht
+                    l_c, r_c = st.columns(2)
+                    
+                    with l_c:
+                        Skipper = st_tags(
+                            label='#### TEST!!! to skip terminology:',
+                            text='Press enter to add more',
+                            suggestions=['1', '2', '3', 
+                                        '4', '5', '6'],
+                            maxtags = 5,
+                            key='3')
 
-                    Skipper1 = st_tags(
-                        label='#### TEST!!! to skip terminology: Colums',
-                        text='Press enter to add more',
-                        suggestions=['1', '2', '3', 
-                                    '4', '5', '6'],
-                        maxtags = 5,
-                        key='4')
+                    with r_c:
+                        Skipper1 = st_tags(
+                            label='#### TEST!!! to skip terminology: Colums',
+                            text='Press enter to add more',
+                            suggestions=['1', '2', '3', 
+                                        '4', '5', '6'],
+                            maxtags = 5,
+                            key='4')
 
                 storage = st.radio(
                     label=" is the data stored in rows or in columns?",
