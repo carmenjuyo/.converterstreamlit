@@ -74,6 +74,8 @@ def run_process():
 
             rn_c = 0
             rv_c = 0
+            rn_c1 = 0
+            rv_c1 = 0
 
             for z in sMonths:
                 try:
@@ -89,17 +91,20 @@ def run_process():
             elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
             elif tMonth == 'Feb': mDay = 28
             else: mDay = 30
-            
-            # //TODO duidelijke error handling toevoegen.
 
             if storage == 'Rows':
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
                         if i == int(row_n):
-                            if "Rms" == ws.cell(i,j).value:
+                            if terminology[0] == ws.cell(i,j).value:
                                 rn_c = rn_c + 1
-                                cRngn.append(f"Rms {ws.cell(i,j)}")
+                                if str(rn_c) in Skipper:
+                                    print(f"{rn_c} is in list: {Skipper} so skip")
+                                    break
+                                else:
+                                    pass
+                                cRngn.append(f"{terminology[0]} {ws.cell(i,j)}")
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
                                         iDataRn.append(cell.value)
@@ -111,19 +116,25 @@ def run_process():
                                 break
                 
                 if rn_c != len(iSegments):
-                    
+
                     st.error(f"""
-                        {len(iSegments)} segments were counted / selected, but only {rn_c} data entry points were accesses.
-                        See here the overview of the range of the succeeded data entries:
-                        """, icon="❌")
+                        ERROR! In total there are {len(iSegments)} entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
+                        See below an overview of the segments and their range that were succeeded:
+                    """, icon="❌")
                     st.json(cRngn, expanded=True)
+                    return
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
                         if i == int(row_n):
-                            if "ZAR" == ws.cell(i,j).value:
+                            if terminology[1] == ws.cell(i,j).value:
                                 rv_c = rv_c + 1
-                                cRngv.append(f"ZAR {ws.cell(i,j)}")
+                                if str(rn_c) in Skipper:
+                                    print(f"{rn_c} is in list: {Skipper} so skip")
+                                    break
+                                else:
+                                    pass
+                                    cRngv.append(f"{terminology[0]} {ws.cell(i,j)}")
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
                                         iDataRv.append(round(cell.value,2))
@@ -137,60 +148,71 @@ def run_process():
                 if rv_c != len(iSegments):
 
                     st.error(f"""
-                        {len(iSegments)} segments were counted / selected, but only {rv_c} data entry points were accesses.
-                        See here the overview of the range of the succeeded data entries:
-                        """,icon="❌")
+                        ERROR! In total there are {len(iSegments)} entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
+                        See below an overview of the segments and their range that were succeeded:
+                    """, icon="❌")
                     st.json(cRngv, expanded=True)
-                    break
+                    return
                     
-            # //TODO Make the process for columns (M&T)
             else:
                 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
                         if j == int(row_n):
-                            if "Rms" == ws.cell(i,j).value:
+                            if terminology[0] == ws.cell(i,j).value:
                                 rn_c = rn_c + 1
-                                cRngn.append(f"Rms {ws.cell(i,j)}")
-                                for column in ws.iter_rows(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
-                                    for cell in column:
-                                        iDataRn.append(cell.value)
-                                iDataRn.append("Rms")
-                            if rn_c == len(iSegments):
-                                break
+                                if str(rn_c) in Skipper:
+                                    print(f"{rn_c} is in list: {Skipper} so skip")
+                                    
+                                else:
+                                    rn_c1 = rn_c1 + 1
+                                    print(f"{terminology[0]} {ws.cell(i,j)}")
+                                    cRngn.append(f"{terminology[0]} {ws.cell(i,j)}")
+                                    for column in ws.iter_cols(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
+                                        for cell in column:
+                                            iDataRn.append(cell.value)
+                                    
+                                    iDataRnT.append(iDataRn)
+                                    iDataRn = []
 
-                if rn_c != len(iSegments):
+                if rn_c1 != len(iSegments):
                     
                     st.error(f"""
-                        {len(iSegments)} segments were counted / selected, but only {rn_c} data entry points were accesses.
-                        See here the overview of the range of the succeeded data entries:
-                        """, icon="❌")
+                        ERROR!1 In total there are {len(iSegments)} entered. But {rn_c1} segments were measured in the month / sheet: {iMonths[x]}.
+                        See below an overview of the segments and their range that were succeeded:
+                    """, icon="❌")
                     st.json(cRngn, expanded=True)
+                    return
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
                         if j == int(row_n):
-                            if "ZAR" == ws.cell(i,j).value:
+                            if terminology[1] == ws.cell(i,j).value:
                                 rv_c = rv_c + 1
-                                cRngv.append(f"Rms {ws.cell(i,j)}")
-                                for column in ws.iter_rows(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
-                                    for cell in column:
-                                        iDataRv.append([round(cell.value,2)])
-                                iDataRv.append("ZAR")
-                            if rv_c == len(iSegments):
-                                break
+                                if str(rv_c) in Skipper1:
+                                    print(f"{rv_c} is in list: {Skipper1} so skip")
 
-                if rv_c != len(iSegments):
+                                else:
+                                    rv_c1 = rv_c1 + 1
+                                    cRngv.append(f"{terminology[1]} {ws.cell(i,j)}")
+                                    print(f"{terminology[1]} {ws.cell(i,j)}")
+                                    for column in ws.iter_cols(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
+                                        for cell in column:
+                                            iDataRv.append((cell.value))
+                                    
+                                    iDataRvT.append(iDataRv)
+                                    iDataRv = []
+
+                if rv_c1 != len(iSegments):
                     
                     st.error(f"""
-                        {len(iSegments)} segments were counted / selected, but only {rn_c} data entry points were accesses.
-                        See here the overview of the range of the succeeded data entries:
-                        """, icon="❌")
-                    st.json(cRngn, expanded=True)
-
+                        ERROR!2 In total there are {len(iSegments)} entered. But {rv_c1} segments were measured in the month / sheet: {iMonths[x]}.
+                        See below an overview of the segments and their range that were succeeded:
+                    """, icon="❌")
+                    st.json(cRngv, expanded=True)
+                    
         print("---")
 
-        # FIXME sorting array doesn't work after 1 iMonths
         a = 0
         for x in range(len(iMonths)):
             
@@ -226,8 +248,6 @@ def run_process():
 
                             iSort[i] = iSegments[i]
                             iSort[y] = temp
-
-                        time.sleep(0.5)
             
             if x == 0:
                 a = len(iSort)
@@ -259,14 +279,6 @@ def run_process():
         for x in range(len(all_columns)):
             sheet.cell(row=1, column=y).value=all_columns[x]
             y =y + 1
-
-        if len(iSegments) == shape[1]: # Same amount of segments
-            #print(f"{len(iSegments)} - {(shape[1])}")
-            pass
-        elif len(iSegments) == (shape[1] - 1): # missing 1 segment
-            #colums_needed = 
-            #print(f"{len(iSegments)} - {(shape[1])}")
-            pass
 
         x = 2 # COLUMN
         y = 2 # ROW
@@ -349,11 +361,15 @@ with st.container():
         st.header("Forecast File client")
         uploaded_file_CLIENT = st.file_uploader("Upload client file", type=".xlsx")
 
-        use_example_file = st.checkbox(
-            "Use example file", False, help="Use in-built example file to demo the app")
+        use_example_file_R = st.checkbox(
+            "Use example fileR", False, help="Use in-built example file to demo the app")
+        use_example_file_C = st.checkbox(
+            "Use example fileC", False, help="Use in-built example file to demo the app")
 
-        if use_example_file:
+        if use_example_file_R:
             uploaded_file_CLIENT = 'Spier Budget Business Mix 2022I2023 (1).xlsx'
+        if use_example_file_C:
+            uploaded_file_CLIENT = 'CHLEP - Forecast 2022-23.xlsx'
 
         if uploaded_file_CLIENT:
 
@@ -369,7 +385,6 @@ with st.container():
 
                 st.write('You selected:', cols)
 
-                # https://www.datacamp.com/tutorial/fuzzy-string-python
                 str2Match = cols[0]
                 strOptions = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
                 
@@ -389,11 +404,17 @@ with st.container():
         st.header("Format file JUYO")
         uploaded_file_JUYO = st.file_uploader("Upload JUYO file", type=".xlsx")
 
-        use_example_file1 = st.checkbox(
-            "Use example file1", False, help="Use in-built example file to demo the app")
+        use_example_file_R1 = st.checkbox(
+            "Use example fileR1", False, help="Use in-built example file to demo the app")
+        
+        use_example_file_C1 = st.checkbox(
+            "Use example fileC1", False, help="Use in-built example file to demo the app")
 
-        if use_example_file1:
+        if use_example_file_R1:
             uploaded_file_JUYO = 'SPIER_1_MAJOR_DAILY (2).xlsx'
+
+        if use_example_file_C1:
+            uploaded_file_JUYO = 'MTELP_2_MINOR_DAILY (3).xlsx'
 
         if uploaded_file_JUYO:
             
@@ -482,7 +503,7 @@ try:
 
         if len(terminology) == 2:
             option = st.radio(
-                "is the data stored as Rn & Rev or Rn & ADR?",
+                "is the data stored as Rn & Rev or Rn & ADR? (DOES NOT WORK CURRENTLY)",
                 ('No disered option', 'Rn & Rev', 'Rn & ADR'))
 
             if option == 'Rn & Rev':
@@ -491,6 +512,22 @@ try:
                 st.write('You selected Rn & ADR.')
             else:
                 st.write("You didn't select anything, if disered combination isn't present, please contact JUYO.")
+
+            Skipper = st_tags(
+                label='# TEST!!! to skip terminology:',
+                text='Press enter to add more',
+                suggestions=['1', '2', '3', 
+                            '4', '5', '6'],
+                maxtags = 5,
+                key='3')
+
+            Skipper1 = st_tags(
+                label='# TEST!!! to skip terminology: Colums',
+                text='Press enter to add more',
+                suggestions=['1', '2', '3', 
+                            '4', '5', '6'],
+                maxtags = 5,
+                key='4')
 
             storage = st.radio(
                 "is the data stored in rows or in columns?",
@@ -510,8 +547,5 @@ try:
                         if st.button("Start converting process."): run_process()
                 print(row_n)
 
-#except Exception as e: print(e)
 except Exception:
     traceback.print_exc()
-
-#st.button("Start converting process."): run_process()
