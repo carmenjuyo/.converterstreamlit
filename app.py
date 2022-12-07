@@ -1,26 +1,20 @@
 from datetime import datetime
-import time
-from openpyxl.utils.cell import get_column_letter
 from streamlit_sortables import sort_items
 from streamlit_tags import st_tags
 from fuzzywuzzy import process
 import pandas as pd
 import streamlit as st
-import numpy as np
 import openpyxl
-import xlsxwriter
 import traceback
 import json
-
-# //TODO install warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
 
 # Set up page config
 st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_clockwise:", layout="wide")#, initial_sidebar_state="collapsed")
 
-# Hide streamlit footer; (header {visibility hidden;})
 hide_default_format = """
        <style>
        footer {visibility: hidden;}
+       header {visibility: hidden;}
        </style>
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
@@ -67,12 +61,12 @@ def save_storage():
 
     json_string = json.dumps(data_storage)
 
-    
     with st.sidebar:
         st.write("""
             # Here you can download your input for future use.
              Check if the data is complete and then download the json file.
              """)
+
         st.json(json_string, expanded=False)
 
         st.download_button(
@@ -145,12 +139,13 @@ def run_process():
             
             for x in data_json['iSort'].dropna(): iSort.append(x)
 
+            # //TODO Kan inprincipe weg. Omdat iLoc[0] altijd nu aangeeft was het is.
             if data_json['iLoc'].iloc[0] == "Rows":
 
                 json_storage.append(data_json['iLoc'].iloc[0])
                 row_n_storage.append(data_json['iLoc'].iloc[1])
 
-            elif data_json['iLoc'].iloc[0] == 'Columns': # //TODO FOR COLUMNS OOK
+            elif data_json['iLoc'].iloc[0] == 'Columns':
                 
                 json_storage.append(data_json['iLoc'].iloc[0])
                 row_n_storage.append(data_json['iLoc'].iloc[1])
@@ -223,9 +218,10 @@ def run_process():
                 if rn_c1 != len(iSegments):
 
                     st.error(f"""
-                        ERROR! RN: In total there are {len(iSegments)} entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
+                        ##### ERROR for: {iTerm[0]}. In total {len(iSegments)} segmets entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
                         See below an overview of the segments and their range that were succeeded:
-                    """, icon="❌")
+                    """, 
+                    icon="❌")
                     st.json(cRngn, expanded=True)
                     return
 
@@ -250,9 +246,10 @@ def run_process():
                 if rv_c1 != len(iSegments):
 
                     st.error(f"""
-                        ERROR! REV: In total there are {len(iSegments)} entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
+                        ##### ERROR for: {iTerm[1]}. In total {len(iSegments)} segmets entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
                         See below an overview of the segments and their range that were succeeded:
-                    """, icon="❌")
+                    """, 
+                    icon="❌")
                     st.json(cRngv, expanded=True)
                     return
                     
@@ -279,9 +276,10 @@ def run_process():
                 if rn_c1 != len(iSegments):
                     
                     st.error(f"""
-                        ERROR! {iTerm[0]}: In total there are {len(iSegments)} entered. But {rn_c1} segments were measured in the month / sheet: {iMonths[x]}.
+                        ##### ERROR for: {iTerm[0]}. In total {len(iSegments)} segmets entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
                         See below an overview of the segments and their range that were succeeded:
-                    """, icon="❌")
+                    """, 
+                    icon="❌")
                     st.json(cRngn, expanded=True)
                     return
 
@@ -306,9 +304,10 @@ def run_process():
                 if rv_c1 != len(iSegments):
                     
                     st.error(f"""
-                        ERROR!2 In total there are {len(iSegments)} entered. But {rv_c1} segments were measured in the month / sheet: {iMonths[x]}.
+                        ##### ERROR for: {iTerm[1]}. In total {len(iSegments)} segmets entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
                         See below an overview of the segments and their range that were succeeded:
-                    """, icon="❌")
+                    """, 
+                    icon="❌")
                     st.json(cRngv, expanded=True)
                     return
                     
@@ -330,8 +329,8 @@ def run_process():
                     if strFind == strStored:
                         
                         if i == y:
-                            print(f"-- Level & Name match: {strFind} = {i}")
-                        
+                            #print(f"-- Level & Name match: {strFind} = {i}")
+                            pass
                         else:
                             print(f"- Name match: {strFind} : {i} - {y}")
                             print(f"- reordering...")
@@ -380,7 +379,7 @@ def run_process():
         y = 1
         for x in range(len(all_columns)):
             sheet.cell(row=1, column=y).value=all_columns[x]
-            y =y + 1
+            y = y + 1
 
         x = 2 # COLUMN
         y = 2 # ROW
@@ -432,8 +431,6 @@ def run_process():
             file_name=uploaded_file_JUYO,
             mime="application/octet-stream"
             )
-    
-
 
 # Header of the page
 with st.container():
@@ -606,7 +603,8 @@ if stro == 'No':
                 st.warning(f"""
                     ##### Always put the terminology of roomnights as first!, then revenue or ADR! 
                     {len(terminology)} terminology of {2} entered.
-                    """, icon="⚠️")
+                    """, 
+                    icon="⚠️")
 
                 
                 if len(terminology) == 2:
@@ -626,7 +624,7 @@ if stro == 'No':
                     skip_term = st.checkbox('Want to skip terminology on certain places?')
 
                     if skip_term:
-                        #FIXME Dit moet na row of column kiezen komen! Goed nadenken hoe dit was ingericht
+
                         l_c, r_c = st.columns(2)
 
                         with l_c:
@@ -646,6 +644,7 @@ if stro == 'No':
                                             '4', '5', '6'],
                                 maxtags = 5,
                                 key='4')
+
                     else:
                         Skipper = []
                         Skipper1 = []
@@ -678,8 +677,6 @@ if stro == 'No':
         traceback.print_exc()
 
 elif stro == 'Yes':
-    st.write('Hallo')
-    #st.header("JSON file storage")
 
     uploaded_file_JSON = st.file_uploader("Upload json file", type=".json")
 
@@ -689,11 +686,10 @@ elif stro == 'Yes':
         data_json.dropna()
 
         st.write('## Select starting year of first sheet.')
+
         year = st.select_slider(
             label=".",
             options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
-
-        st.write(year)
 
         if st.button("Start converting process."): run_process()
 
