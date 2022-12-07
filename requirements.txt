@@ -6,4 +6,3 @@ streamlit_sortables
 streamlit_tags
 datetime
 xlsxwriter
-traceback
