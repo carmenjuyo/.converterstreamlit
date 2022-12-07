@@ -335,7 +335,7 @@ def run_process():
 
         a = 0
         for x in range(len(iMonths)):
-            
+
             for i in range(len(iSegments)):
 
                 strFind = iSegments[i]
@@ -378,7 +378,7 @@ def run_process():
             if stro == 'No':
                 for z in keywords: iSort.append(z)
             elif stro == 'Yes':
-                for x in data_json['iSort'].dropna(): iSort.append(z)
+                for z in data_json['iSort'].dropna(): iSort.append(z)
 
         st.json(iDataRnT, expanded=False)
 
@@ -391,6 +391,8 @@ def run_process():
         df2 = pd.DataFrame(data=d)
 
         df2 = df2.T
+
+        st.dataframe(df2)
 
         wb = openpyxl.Workbook()
         sheet = wb.active
@@ -405,7 +407,8 @@ def run_process():
         y = 2 # ROW
         t = 2 # ROW
         s = 1 # SEGMENTS
-    
+        
+        # //FIXME Hier gaat iets mis wanneer er meerdere maanden zijn!
         for i in range(len(iDataRnT)):
 
             for z in range(len(iDataRnT[i])):
