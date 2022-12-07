@@ -2,6 +2,7 @@ from datetime import datetime
 from streamlit_sortables import sort_items
 from streamlit_tags import st_tags
 from fuzzywuzzy import process
+from fuzzywuzzy import fuzz
 import pandas as pd
 import streamlit as st
 import openpyxl
@@ -10,14 +11,33 @@ import json
 
 # Set up page config
 st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_clockwise:", layout="wide")#, initial_sidebar_state="collapsed")
-
+#header {visibility: hidden;}
 hide_default_format = """
        <style>
        footer {visibility: hidden;}
-       header {visibility: hidden;}
+       
        </style>
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
+
+def check_segments():
+    
+    juyo_segments = []
+    client_segments = []
+    segments_score = []
+
+    for x in sorted_items1: juyo_segments.append(x.lower())
+    for x in sorted_items2: client_segments.append(x.lower())
+
+    for x in range(len(client_segments)):
+
+        str2Match = juyo_segments[x]
+        strOptions = client_segments[x]
+
+        highest =  fuzz.ratio(str2Match,strOptions)
+        
+        print(highest)
+
 
 def save_storage():
 
@@ -447,7 +467,7 @@ with st.container():
     with r_column:
         st.write("")
 
-# The 2 different columns for the different files
+
 with st.container():
 
     st.write("---")
@@ -472,18 +492,13 @@ with st.container():
 
         if uploaded_file_CLIENT:
 
-            df = pd.read_excel(uploaded_file_CLIENT)
             st.markdown("### Select wanted sheets for conversion.")
+
             tabs = pd.ExcelFile(uploaded_file_CLIENT).sheet_names
 
             cols = st.multiselect('select sheets:', tabs)
-    
-            try:
-                st.write('You selected:', cols)    
-            except:
-                with st.empty():
-                    if len(cols) == 0:
-                        st.subheader("⚠️ No sheets selected.")
+
+            st.write('You selected:', cols) 
 
     with right_column:
         st.header("Format file JUYO")
@@ -517,181 +532,183 @@ with st.container():
             st.write(shape[1], ' segments detected in Juyo file')
             
             st.write(df1.columns.to_list())
+        
+    if uploaded_file_JUYO:
 
-st.write("---")
-
-st.write("## Use last time storage?")
-stro = st.radio(
-    label="Use json file?",
-    options=("No", "Yes"),
-    horizontal=True
-    )
-
-if stro == 'No':
-    try:
         st.write("---")
 
-        keywords = st_tags(
-            label="""
-                # Enter your segments in the exact order they appear in your Excel file:
-                So go to your sheet to where the segments with data is stored, 
-                and then go from left to right or top to bottom and then fill in all your segments 
-                here in that order.
-                    """,
-            
-            text='Press enter to add more',
-            suggestions=['leisure', 'Leisure', 'groups', 
-                        'Groups', 'group', 'Group', 
-                        'Business', 'business', 'corporate',
-                        'Direct', 'direct', 'Indirect', 'indirect'
-                        'individual', 'packages', 'complementary', 'house'
-                        ],
-            maxtags = shape[1],
-            key='1')
+        st.write("## Reload JSON file from previous input?")
+        stro = st.radio(
+            label="-",
+            options=("No", "Yes"),
+            horizontal=True,
+            index=0
+            )
 
-        if len(keywords) == shape[1] - 1:
-            st.warning('Do you miss 1 segment that is placed on the end of the JUYO segments? Read this 👇', icon="⚠️")
-            st.write("""
-                If you are 1 segment short, and that segment happens to be last, there is a possibility.
-                When the missing segment is at the last, this process can recognize it and leave it empty, automatically becoming zero in JUYO. Click the checkbox if so.
-                """)
-            e_segments = st.checkbox('Extra (empty!) segment on last place?')
-            ("---")
-
-        st.write(len(keywords), ' segments of ', shape[1], ' entered.')
-        st.write(keywords)
-
-        if len(keywords) == shape[1] or e_segments:
-
-            with st.container():
-
+        if stro == 'No':
+            try:
                 st.write("---")
 
-                left_column, right_column = st.columns(2)
-
-                with left_column:
-                    # https://github.com/ohtaman/streamlit-sortables
+                keywords = st_tags(
+                    label="""
+                        # Enter your segments in the exact order they appear in your Excel file:
+                        So go to your sheet to where the segments with data is stored, 
+                        and then go from left to right or top to bottom and then fill in all your segments 
+                        here in that order.
+                            """,
                     
-                    st.markdown("### Segments in the order they should be.")
-                    sorted_items1 = sort_items(df1.columns.to_list(), direction='vertical')
+                    text='Press enter to add more',
+                    suggestions=['leisure', 'Leisure', 'groups', 
+                                'Groups', 'group', 'Group', 
+                                'Business', 'business', 'corporate',
+                                'Direct', 'direct', 'Indirect', 'indirect'
+                                'individual', 'packages', 'complementary', 'house'
+                                ],
+                    maxtags = shape[1],
+                    key='1')
 
-                with right_column:
-                    st.markdown("### Map the segments so that they match the segments on the left!")
-                    sorted_items2 = sort_items(keywords, direction='vertical')
+                if len(keywords) == shape[1] - 1:
+                    st.warning('Do you miss 1 segment that is placed on the end of the JUYO segments? Read this 👇', icon="⚠️")
+                    st.write("""
+                        If you are 1 segment short, and that segment happens to be last, there is a possibility.
+                        When the missing segment is at the last, this process can recognize it and leave it empty, automatically becoming zero in JUYO. Click the checkbox if so.
+                        """)
+                    e_segments = st.checkbox('Extra (empty!) segment on last place?')
+                    ("---")
 
-            
+                st.write(len(keywords), ' segments of ', shape[1], ' entered.')
+                st.write(keywords)
+
+                if len(keywords) == shape[1] or e_segments:
+
+                    with st.container():
+
+                        st.write("---")
+
+                        left_column, right_column = st.columns(2)
+
+                        with left_column:
+                            # https://github.com/ohtaman/streamlit-sortables
+                            
+                            st.markdown("### Segments in the order they should be.")
+                            sorted_items1 = sort_items(df1.columns.to_list(), direction='vertical')
+
+                        with right_column:
+                            st.markdown("### Map the segments so that they match the segments on the left!")
+                            sorted_items2 = sort_items(keywords, direction='vertical')
+
+                        if st.button('checksegments'): check_segments()
+
+                        st.write('## Select starting year of first sheet.')
+                        year = st.select_slider(
+                            label=".",
+                            options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
+
+                        st.write(year)
+
+                        terminology = st_tags(
+                            label="""
+                                # Enter the terminology used in Excel file for roomnights and revenue:
+                                For example; roonnights = Rms, Rn, etc. Revenue = Rev, Rvu, etc.
+                                """,
+                            text='Press enter to add more',
+                            suggestions=['rn', 'RN', 'Rn', 
+                                        'Rev', 'REV', 'rev', 
+                                        'ADR', 'Adr', 'adr',
+                                        ],
+                            maxtags = 2,
+                            key='2')
+
+                        st.warning(f"""
+                            ##### Always put the terminology of roomnights as first!, then revenue or ADR! 
+                            {len(terminology)} terminology of {2} entered.
+                            """, 
+                            icon="⚠️")
+
+                        if len(terminology) == 2:
+                            st.write("")
+                            st.write("##### is the data stored as Rn & Rev or Rn & ADR? (DOES NOT WORK CURRENTLY)")
+                            option = st.radio(
+                                label=".",
+                                options=('No disered option', 'Rn & Rev', 'Rn & ADR'))
+
+                            if option == 'Rn & Rev':
+                                st.write('You selected Rn & Rev.')
+                            elif option == 'Rn & ADR':
+                                st.write('You selected Rn & ADR.')
+                            else:
+                                st.write("You didn't select anything, if disered combination isn't present, please contact JUYO.")
+
+                            skip_term = st.checkbox('Want to skip terminology on certain places?')
+
+                            if skip_term:
+
+                                l_c, r_c = st.columns(2)
+
+                                with l_c:
+                                    Skipper = st_tags(
+                                        label='### Skip a terminology in order (Rms)',
+                                        text='Press enter to add more',
+                                        suggestions=['1', '2', '3', 
+                                                    '4', '5', '6'],
+                                        maxtags = 5,
+                                        key='3')
+
+                                with r_c:
+                                    Skipper1 = st_tags(
+                                        label='### Skip a terminology in order (Rev)',
+                                        text='Press enter to add more',
+                                        suggestions=['1', '2', '3', 
+                                                    '4', '5', '6'],
+                                        maxtags = 5,
+                                        key='4')
+
+                            else:
+                                Skipper = []
+                                Skipper1 = []
+                            
+                            storage = st.radio(
+                                label=" is the data stored in rows or in columns?",
+                                options=('Rows', 'Columns'))
+                        
+                            if storage == 'Rows':
+                                row_n = st.text_input("in which row can the terminology be found?")
+                                if row_n:
+                                    if st.checkbox("want to store the input for future reference?"):
+                                        if st.button('store data'): 
+                                            save_storage()
+                                            if st.button("Start converting process."): run_process()
+                                    if st.button("Start converting process."): run_process()
+                            else:
+                                row_n = st.text_input("in which column can the terminology be found?")
+                                row_n = ord(row_n) - 96
+                                if row_n:
+                                    if st.checkbox("want to store the input for future reference?"):
+                                        if st.button('stora date '): 
+                                            save_storage()
+                                            if st.button("Start converting process."): run_process()
+                                    if st.button("Start converting process."): run_process()
+                                print(row_n)
+
+            except Exception:
+                traceback.print_exc()
+
+        elif stro == 'Yes':
+
+            uploaded_file_JSON = st.file_uploader("Upload json file", type=".json")
+
+            if uploaded_file_JSON:
+                data_json = pd.read_json(uploaded_file_JSON, orient='index')
+                data_json = data_json.transpose()
+                data_json.dropna()
+
                 st.write('## Select starting year of first sheet.')
+
                 year = st.select_slider(
                     label=".",
                     options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
 
-                st.write(year)
+                if st.button("Start converting process."): run_process()
 
-                terminology = st_tags(
-                    label="""
-                        # Enter the terminology used in Excel file for roomnights and revenue:
-                        For example; roonnights = Rms, Rn, etc. Revenue = Rev, Rvu, etc.
-                        """,
-                    text='Press enter to add more',
-                    suggestions=['rn', 'RN', 'Rn', 
-                                'Rev', 'REV', 'rev', 
-                                'ADR', 'Adr', 'adr',
-                                ],
-                    maxtags = 2,
-                    key='2')
-
-                st.warning(f"""
-                    ##### Always put the terminology of roomnights as first!, then revenue or ADR! 
-                    {len(terminology)} terminology of {2} entered.
-                    """, 
-                    icon="⚠️")
-
-                
-                if len(terminology) == 2:
-                    st.write("")
-                    st.write("##### is the data stored as Rn & Rev or Rn & ADR? (DOES NOT WORK CURRENTLY)")
-                    option = st.radio(
-                        label=".",
-                        options=('No disered option', 'Rn & Rev', 'Rn & ADR'))
-
-                    if option == 'Rn & Rev':
-                        st.write('You selected Rn & Rev.')
-                    elif option == 'Rn & ADR':
-                        st.write('You selected Rn & ADR.')
-                    else:
-                        st.write("You didn't select anything, if disered combination isn't present, please contact JUYO.")
-
-                    skip_term = st.checkbox('Want to skip terminology on certain places?')
-
-                    if skip_term:
-
-                        l_c, r_c = st.columns(2)
-
-                        with l_c:
-                            Skipper = st_tags(
-                                label='### Skip a terminology in order (Rms)',
-                                text='Press enter to add more',
-                                suggestions=['1', '2', '3', 
-                                            '4', '5', '6'],
-                                maxtags = 5,
-                                key='3')
-
-                        with r_c:
-                            Skipper1 = st_tags(
-                                label='### Skip a terminology in order (Rev)',
-                                text='Press enter to add more',
-                                suggestions=['1', '2', '3', 
-                                            '4', '5', '6'],
-                                maxtags = 5,
-                                key='4')
-
-                    else:
-                        Skipper = []
-                        Skipper1 = []
-                    
-
-                    storage = st.radio(
-                        label=" is the data stored in rows or in columns?",
-                        options=('Rows', 'Columns'))
-                
-                    if storage == 'Rows':
-                        row_n = st.text_input("in which row can the terminology be found?")
-                        if row_n:
-                            if st.checkbox("want to store the input for future reference?"):
-                                if st.button('store data'): 
-                                    save_storage()
-                                    if st.button("Start converting process."): run_process()
-                            if st.button("Start converting process."): run_process()
-                    else:
-                        row_n = st.text_input("in which column can the terminology be found?")
-                        row_n = ord(row_n) - 96
-                        if row_n:
-                            if st.checkbox("want to store the input for future reference?"):
-                                if st.button('stora date '): 
-                                    save_storage()
-                                    if st.button("Start converting process."): run_process()
-                            if st.button("Start converting process."): run_process()
-                        print(row_n)
-
-    except Exception:
-        traceback.print_exc()
-
-elif stro == 'Yes':
-
-    uploaded_file_JSON = st.file_uploader("Upload json file", type=".json")
-
-    if uploaded_file_JSON:
-        data_json = pd.read_json(uploaded_file_JSON, orient='index')
-        data_json = data_json.transpose()
-        data_json.dropna()
-
-        st.write('## Select starting year of first sheet.')
-
-        year = st.select_slider(
-            label=".",
-            options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
-
-        if st.button("Start converting process."): run_process()
-
-else:
-    st.write('please select a option.')
+        else:
+            st.write('please select a option.')
