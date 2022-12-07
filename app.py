@@ -126,7 +126,9 @@ def run_process():
             json_storage.append(storage)
 
             for x in Skipper: Skipper_s.append(x)
+            Skipper_s = [round(float(i)) for i in Skipper_s]
             for x in Skipper1: Skipper_s1.append(x)
+            Skipper_s1 = [round(float(i)) for i in Skipper_s1]
 
         elif stro == 'Yes': 
 
@@ -149,15 +151,18 @@ def run_process():
                 row_n_storage.append(data_json['iLoc'].iloc[1])
 
             elif data_json['iLoc'].iloc[0] == 'Columns': # //TODO FOR COLUMNS OOK
-                storage == 'Columns'
-                row_n == data_json['iLoc'].iloc[1]
+                
+                json_storage.append(data_json['iLoc'].iloc[0])
+                row_n_storage.append(data_json['iLoc'].iloc[1])
+
             else:
                 st.warning('Error at iLoc process')
                 return
             
             for x in data_json['iSkipper'].dropna(): Skipper_s.append(x)
+            Skipper_s = [round(float(i)) for i in Skipper_s]
             for x in data_json['iSkipper1'].dropna(): Skipper_s1.append(x)
-            
+            Skipper_s1 = [round(float(i)) for i in Skipper_s1]
 
         else:
             return
@@ -169,7 +174,7 @@ def run_process():
         print(f"sorting (iSort): {iSort}")
 
         for x in range(len(iMonths)):
-
+            
             wb = openpyxl.load_workbook(uploaded_file_CLIENT, data_only=True)
 
             ws = wb[(iMonths[x])]
@@ -195,33 +200,27 @@ def run_process():
             elif tMonth == 'Feb': mDay = 28
             else: mDay = 30
 
-            #if Storage_1[0] == 'Rows' or json_storage[0] == 'Rows':
             if json_storage[0] == 'Rows':
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
-                        #if i == row_n or i == int(row_n_storage[0]):
                         if i == int(row_n_storage[0]):
-                            if iTerm[0] == ws.cell(i,j).value: # terminology[0]
+                            if iTerm[0] == ws.cell(i,j).value:
                                 rn_c = rn_c + 1
-                                if str(rn_c) in Skipper_s: # str(rn_c) in Skipper or 
-                                    print(f"{rn_c} is in list: {Skipper} so skip")
-                                    break
+                                if int(rn_c) in Skipper_s:
+                                    print(f"{rn_c} is in list: {Skipper_s} so skip")
+                                    
                                 else:
-                                    pass
-                                print(rn_c)
-                                cRngn.append(f"{iTerm[0]} {ws.cell(i,j)}")
-                                for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
-                                    for cell in row:
-                                        iDataRn.append(cell.value)
-                                
-                                iDataRnT.append(iDataRn)
-                                iDataRn = []
-                                
-                            if rn_c == len(iSegments):
-                                break
+                                    rn_c1 = rn_c1 + 1
+                                    cRngn.append(f"{iTerm[0]} {ws.cell(i,j)}")
+                                    for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
+                                        for cell in row:
+                                            iDataRn.append(cell.value)
+                                    
+                                    iDataRnT.append(iDataRn)
+                                    iDataRn = []
                 
-                if rn_c != len(iSegments):
+                if rn_c1 != len(iSegments):
 
                     st.error(f"""
                         ERROR! RN: In total there are {len(iSegments)} entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -232,26 +231,23 @@ def run_process():
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
-                        if i == int(row_n_storage[0]): # maybe try with int(row_n) expect without int
+                        if i == int(row_n_storage[0]):
                             if iTerm[1] == ws.cell(i,j).value:
                                 rv_c = rv_c + 1
-                                if str(rn_c) in Skipper_s1:
-                                    print(f"{rn_c} is in list: {Skipper} so skip")
-                                    break
+                                if int(rv_c) in Skipper_s1:
+                                    print(f"{rn_c} is in list: {Skipper_s1} so skip")
+                                    
                                 else:
-                                    pass
+                                    rv_c1 = rv_c1 + 1
                                     cRngv.append(f"{iTerm[0]} {ws.cell(i,j)}")
-                                for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
-                                    for cell in row:
-                                        iDataRv.append(round(cell.value,2))
-                                
-                                iDataRvT.append(iDataRv)
-                                iDataRv = []
+                                    for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
+                                        for cell in row:
+                                            iDataRv.append(round(cell.value,2))
+                                    
+                                    iDataRvT.append(iDataRv)
+                                    iDataRv = []
 
-                            if rv_c == len(iSegments):
-                                break
-
-                if rv_c != len(iSegments):
+                if rv_c1 != len(iSegments):
 
                     st.error(f"""
                         ERROR! REV: In total there are {len(iSegments)} entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -264,16 +260,15 @@ def run_process():
                 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
-                        if j == row_n:
-                            if terminology[0] == ws.cell(i,j).value:
+                        if j == int(row_n_storage[0]):
+                            if iTerm[0] == ws.cell(i,j).value:
                                 rn_c = rn_c + 1
-                                if str(rn_c) in Skipper:
-                                    print(f"{rn_c} is in list: {Skipper} so skip")
+                                if int(rn_c) in Skipper_s:
+                                    print(f"{rn_c} is in list: {Skipper_s} so skip")
                                     
                                 else:
                                     rn_c1 = rn_c1 + 1
-                                    print(f"{terminology[0]} {ws.cell(i,j)}")
-                                    cRngn.append(f"{terminology[0]} {ws.cell(i,j)}")
+                                    cRngn.append(f"{iTerm[0]} {ws.cell(i,j)}")
                                     for column in ws.iter_cols(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
                                         for cell in column:
                                             iDataRn.append(cell.value)
@@ -284,7 +279,7 @@ def run_process():
                 if rn_c1 != len(iSegments):
                     
                     st.error(f"""
-                        ERROR!1 In total there are {len(iSegments)} entered. But {rn_c1} segments were measured in the month / sheet: {iMonths[x]}.
+                        ERROR! {iTerm[0]}: In total there are {len(iSegments)} entered. But {rn_c1} segments were measured in the month / sheet: {iMonths[x]}.
                         See below an overview of the segments and their range that were succeeded:
                     """, icon="❌")
                     st.json(cRngn, expanded=True)
@@ -292,16 +287,15 @@ def run_process():
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
-                        if j == int(row_n):
-                            if terminology[1] == ws.cell(i,j).value:
+                        if j == int(row_n_storage[0]):
+                            if iTerm[1] == ws.cell(i,j).value:
                                 rv_c = rv_c + 1
-                                if str(rv_c) in Skipper1:
-                                    print(f"{rv_c} is in list: {Skipper1} so skip")
+                                if int(rv_c) in Skipper_s1:
+                                    print(f"{rv_c} is in list: {Skipper_s1} so skip")
 
                                 else:
                                     rv_c1 = rv_c1 + 1
-                                    cRngv.append(f"{terminology[1]} {ws.cell(i,j)}")
-                                    print(f"{terminology[1]} {ws.cell(i,j)}")
+                                    cRngv.append(f"{iTerm[1]} {ws.cell(i,j)}")
                                     for column in ws.iter_cols(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
                                         for cell in column:
                                             iDataRv.append((cell.value))
@@ -637,7 +631,7 @@ if stro == 'No':
 
                         with l_c:
                             Skipper = st_tags(
-                                label='#### TEST!!! to skip terminology:',
+                                label='### Skip a terminology in order (Rms)',
                                 text='Press enter to add more',
                                 suggestions=['1', '2', '3', 
                                             '4', '5', '6'],
@@ -646,7 +640,7 @@ if stro == 'No':
 
                         with r_c:
                             Skipper1 = st_tags(
-                                label='#### TEST!!! to skip terminology: Colums',
+                                label='### Skip a terminology in order (Rev)',
                                 text='Press enter to add more',
                                 suggestions=['1', '2', '3', 
                                             '4', '5', '6'],
@@ -689,20 +683,19 @@ elif stro == 'Yes':
 
     uploaded_file_JSON = st.file_uploader("Upload json file", type=".json")
 
-    data_json = pd.read_json(uploaded_file_JSON, orient='index')
-    data_json = data_json.transpose()
-    data_json.dropna()
+    if uploaded_file_JSON:
+        data_json = pd.read_json(uploaded_file_JSON, orient='index')
+        data_json = data_json.transpose()
+        data_json.dropna()
 
-    for x in data_json['iTerm'].dropna(): pass
+        st.write('## Select starting year of first sheet.')
+        year = st.select_slider(
+            label=".",
+            options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
 
-    st.write('## Select starting year of first sheet.')
-    year = st.select_slider(
-        label=".",
-        options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
+        st.write(year)
 
-    st.write(year)
-
-    if st.button("Start converting process."): run_process()
+        if st.button("Start converting process."): run_process()
 
 else:
     st.write('please select a option.')
