@@ -1,9 +1,10 @@
 pandas
 streamlit
 openpyxl
-numpy
 fuzzywuzzy
 streamlit_sortables
 streamlit_tags
 datetime
 xlsxwriter
+json
+traceback
