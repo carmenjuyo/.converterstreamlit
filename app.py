@@ -8,7 +8,6 @@ import pandas as pd
 import streamlit as st
 import numpy as np
 import openpyxl
-from io import BytesIO
 import xlsxwriter
 import traceback
 import json
@@ -16,7 +15,7 @@ import json
 # //TODO install warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
 
 # Set up page config
-st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_clockwise:", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_clockwise:", layout="wide")#, initial_sidebar_state="collapsed")
 
 # Hide streamlit footer; (header {visibility hidden;})
 hide_default_format = """
@@ -25,6 +24,63 @@ hide_default_format = """
        </style>
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
+
+def save_storage():
+
+    print('Start storage...')
+
+    data_storage = {}
+
+    iSegments = []
+    iTerm = []
+    iSort = []
+    iSkipper = []
+    iSkipper1 = []
+    iDataSt = []
+    iLoc = []
+
+    for x in sorted_items2: iSegments.append(x)
+    for x in terminology: iTerm.append(x)
+    for x in keywords: iSort.append(x)
+    for x in Skipper: iSkipper.append(x)
+    for x in Skipper1: iSkipper1.append(x)
+
+    if option == 'Rn & Rev':
+        iDataSt.append('Rev')
+    elif option == 'Rn & ADR':
+        iDataSt.append('ADR')
+
+    if storage == 'Rows':
+        iLoc.append('Rows')
+        iLoc.append(row_n)
+    else:
+        iLoc.append('Columns')
+        iLoc.append(row_n)
+
+    data_storage['iSegments'] = iSegments
+    data_storage['iTerm'] = iTerm
+    data_storage['iSort'] = iSort
+    data_storage['iSkipper'] = iSkipper
+    data_storage['iSkipper1'] = iSkipper1
+    data_storage['iDataSt'] = iDataSt
+    data_storage['iLoc'] = iLoc
+
+    json_string = json.dumps(data_storage)
+
+    
+    with st.sidebar:
+        st.write("""
+            # Here you can download your input for future use.
+             Check if the data is complete and then download the json file.
+             """)
+        st.json(json_string, expanded=False)
+
+        st.download_button(
+            label="Download JSON storage file.",
+            file_name=f"{uploaded_file_JUYO[:5]}_data_JUYO.json",
+            mime="application/json",
+            data=json_string,
+        ) 
 
 def run_process():
     with st.spinner('runnning process...'):
@@ -45,20 +101,66 @@ def run_process():
         iDataRnT = []
         iDataRv = []
         iDataRvT = []
+        json_storage = []
+        row_n_storage = []
+        Skipper_s = []
+        Skipper_s1 = []
+        Storage_1 = []
         sMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
 
-        for x in sorted_items2: iSegments.append(x)
-        for x in cols: iMonths.append(x)
-        for x in terminology: iTerm.append(x)
-        for x in iMonths:
-            str2Match = x
-            strOptions = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
+        if stro == 'No':
+            for x in sorted_items2: iSegments.append(x)
+            for x in cols: iMonths.append(x)
+            for x in terminology: iTerm.append(x)
+            for x in iMonths:
+                str2Match = x
+                strOptions = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
 
-            highest = process.extractOne(str2Match,strOptions)
-            highest = highest
-            iDays.append(highest)
-        
-        for x in keywords: iSort.append(x)
+                highest = process.extractOne(str2Match,strOptions)
+                highest = highest
+                iDays.append(highest)
+            
+            for x in keywords: iSort.append(x)
+
+            row_n_storage.append(row_n)
+            json_storage.append(storage)
+
+            for x in Skipper: Skipper_s.append(x)
+            for x in Skipper1: Skipper_s1.append(x)
+
+        elif stro == 'Yes': 
+
+            for x in data_json['iSegments'].dropna(): iSegments.append(x)
+            for x in cols: iMonths.append(x)
+            for x in data_json['iTerm'].dropna(): iTerm.append(x)
+            for x in iMonths:
+                str2Match = x
+                strOptions = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
+
+                highest = process.extractOne(str2Match,strOptions)
+                highest = highest
+                iDays.append(highest)
+            
+            for x in data_json['iSort'].dropna(): iSort.append(x)
+
+            if data_json['iLoc'].iloc[0] == "Rows":
+
+                json_storage.append(data_json['iLoc'].iloc[0])
+                row_n_storage.append(data_json['iLoc'].iloc[1])
+
+            elif data_json['iLoc'].iloc[0] == 'Columns': # //TODO FOR COLUMNS OOK
+                storage == 'Columns'
+                row_n == data_json['iLoc'].iloc[1]
+            else:
+                st.warning('Error at iLoc process')
+                return
+            
+            for x in data_json['iSkipper'].dropna(): Skipper_s.append(x)
+            for x in data_json['iSkipper1'].dropna(): Skipper_s1.append(x)
+            
+
+        else:
+            return
 
         print(f"iSegments: {iSegments}")
         print(f"sheets (iMonths): {iMonths}")
@@ -87,24 +189,28 @@ def run_process():
                     if x == 0: eMonth = z
 
             print(f'Current month: {tMonth}')
+
             if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
             elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
             elif tMonth == 'Feb': mDay = 28
             else: mDay = 30
 
-            if storage == 'Rows':
+            #if Storage_1[0] == 'Rows' or json_storage[0] == 'Rows':
+            if json_storage[0] == 'Rows':
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
-                        if i == int(row_n):
-                            if terminology[0] == ws.cell(i,j).value:
+                        #if i == row_n or i == int(row_n_storage[0]):
+                        if i == int(row_n_storage[0]):
+                            if iTerm[0] == ws.cell(i,j).value: # terminology[0]
                                 rn_c = rn_c + 1
-                                if str(rn_c) in Skipper:
+                                if str(rn_c) in Skipper_s: # str(rn_c) in Skipper or 
                                     print(f"{rn_c} is in list: {Skipper} so skip")
                                     break
                                 else:
                                     pass
-                                cRngn.append(f"{terminology[0]} {ws.cell(i,j)}")
+                                print(rn_c)
+                                cRngn.append(f"{iTerm[0]} {ws.cell(i,j)}")
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
                                         iDataRn.append(cell.value)
@@ -118,7 +224,7 @@ def run_process():
                 if rn_c != len(iSegments):
 
                     st.error(f"""
-                        ERROR! In total there are {len(iSegments)} entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
+                        ERROR! RN: In total there are {len(iSegments)} entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
                         See below an overview of the segments and their range that were succeeded:
                     """, icon="❌")
                     st.json(cRngn, expanded=True)
@@ -126,15 +232,15 @@ def run_process():
 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
-                        if i == int(row_n):
-                            if terminology[1] == ws.cell(i,j).value:
+                        if i == int(row_n_storage[0]): # maybe try with int(row_n) expect without int
+                            if iTerm[1] == ws.cell(i,j).value:
                                 rv_c = rv_c + 1
-                                if str(rn_c) in Skipper:
+                                if str(rn_c) in Skipper_s1:
                                     print(f"{rn_c} is in list: {Skipper} so skip")
                                     break
                                 else:
                                     pass
-                                    cRngv.append(f"{terminology[0]} {ws.cell(i,j)}")
+                                    cRngv.append(f"{iTerm[0]} {ws.cell(i,j)}")
                                 for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                     for cell in row:
                                         iDataRv.append(round(cell.value,2))
@@ -148,7 +254,7 @@ def run_process():
                 if rv_c != len(iSegments):
 
                     st.error(f"""
-                        ERROR! In total there are {len(iSegments)} entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
+                        ERROR! REV: In total there are {len(iSegments)} entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
                         See below an overview of the segments and their range that were succeeded:
                     """, icon="❌")
                     st.json(cRngv, expanded=True)
@@ -158,7 +264,7 @@ def run_process():
                 
                 for i in range(1, ws.max_row + 1):
                     for j in range(1, ws.max_column + 1):
-                        if j == int(row_n):
+                        if j == row_n:
                             if terminology[0] == ws.cell(i,j).value:
                                 rn_c = rn_c + 1
                                 if str(rn_c) in Skipper:
@@ -210,6 +316,7 @@ def run_process():
                         See below an overview of the segments and their range that were succeeded:
                     """, icon="❌")
                     st.json(cRngv, expanded=True)
+                    return
                     
         print("---")
 
@@ -224,7 +331,7 @@ def run_process():
 
                     strStored = iSort[y]
 
-                    print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
+                    #print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
 
                     if strFind == strStored:
                         
@@ -251,13 +358,14 @@ def run_process():
             
             if x == 0:
                 a = len(iSort)
-                print(f"a = {a}")
             else:
                 a = a + len(iSort)
-                print(f"a = {a}")
 
             iSort.clear()
-            for z in keywords: iSort.append(z)
+            if stro == 'No':
+                for z in keywords: iSort.append(z)
+            elif stro == 'Yes':
+                for x in data_json['iSort'].dropna(): iSort.append(z)
 
         st.json(iDataRnT, expanded=False)
 
@@ -304,7 +412,6 @@ def run_process():
 
         datetime_object = datetime.strptime(eMonth, "%b")
         month_number = datetime_object.month
-        print(month_number)
 
         datelist = pd.date_range(datetime(year, month_number, 1), periods=sheet.max_row - 1).to_pydatetime().tolist()
         
@@ -422,136 +529,180 @@ with st.container():
 
 st.write("---")
 
-try:
-    keywords = st_tags(
-        label="""
-            # Enter your segments in the exact order they appear in your Excel file:
-            So go to your sheet to where the segments with data is stored, 
-            and then go from left to right or top to bottom and then fill in all your segments 
-            here in that order.
-                """,
-        
-        text='Press enter to add more',
-        suggestions=['leisure', 'Leisure', 'groups', 
-                    'Groups', 'group', 'Group', 
-                    'Business', 'business', 'corporate',
-                    'Direct', 'direct', 'Indirect', 'indirect'
-                    'individual', 'packages', 'complementary', 'house'
-                    ],
-        maxtags = shape[1],
-        key='1')
+st.write("## Use last time storage?")
+stro = st.radio(
+    label="Use json file?",
+    options=("No", "Yes"),
+    horizontal=True
+    )
 
-    if len(keywords) == shape[1] - 1:
-        st.warning('Do you miss 1 segment that is placed on the end of the JUYO segments? Read this 👇', icon="⚠️")
-        st.write("""
-            If you are 1 segment short, and that segment happens to be last, there is a possibility.
-            When the missing segment is at the last, this process can recognize it and leave it empty, automatically becoming zero in JUYO. Click the checkbox if so.
-            """)
-        e_segments = st.checkbox('Extra (empty!) segment on last place?')
-        ("---")
+if stro == 'No':
+    try:
+        st.write("---")
 
-    st.write(len(keywords), ' segments of ', shape[1], ' entered.')
-    st.write(keywords)
-
-    if len(keywords) == shape[1] or e_segments:
-
-        with st.container():
-
-            st.write("---")
-
-            left_column, right_column = st.columns(2)
-
-            with left_column:
-                # https://github.com/ohtaman/streamlit-sortables
-                
-                st.markdown("### Segments in the order they should be.")
-                sorted_items1 = sort_items(df1.columns.to_list(), direction='vertical')
-
-            with right_column:
-                st.markdown("### Map the segments so that they match the segments on the left!")
-                sorted_items2 = sort_items(keywords, direction='vertical')
-
-        
-            st.write('## Select starting year of first sheet.')
-            year = st.select_slider(
-                label="",
-                options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
-
-            st.write(year)
-
-            terminology = st_tags(
-                label="""
-                    # Enter the terminology used in Excel file for roomnights and revenue:
-                    For example; roonnights = Rms, Rn, etc. Revenue = Rev, Rvu, etc.
+        keywords = st_tags(
+            label="""
+                # Enter your segments in the exact order they appear in your Excel file:
+                So go to your sheet to where the segments with data is stored, 
+                and then go from left to right or top to bottom and then fill in all your segments 
+                here in that order.
                     """,
-                text='Press enter to add more',
-                suggestions=['rn', 'RN', 'Rn', 
-                            'Rev', 'REV', 'rev', 
-                            'ADR', 'Adr', 'adr',
-                            ],
-                maxtags = 2,
-                key='2')
+            
+            text='Press enter to add more',
+            suggestions=['leisure', 'Leisure', 'groups', 
+                        'Groups', 'group', 'Group', 
+                        'Business', 'business', 'corporate',
+                        'Direct', 'direct', 'Indirect', 'indirect'
+                        'individual', 'packages', 'complementary', 'house'
+                        ],
+            maxtags = shape[1],
+            key='1')
 
-            st.warning(f"""
-                ##### Always put the terminology of roomnights as first!, then revenue or ADR! 
-                 {len(terminology)} terminology of {2} entered.
-                """, icon="⚠️")
+        if len(keywords) == shape[1] - 1:
+            st.warning('Do you miss 1 segment that is placed on the end of the JUYO segments? Read this 👇', icon="⚠️")
+            st.write("""
+                If you are 1 segment short, and that segment happens to be last, there is a possibility.
+                When the missing segment is at the last, this process can recognize it and leave it empty, automatically becoming zero in JUYO. Click the checkbox if so.
+                """)
+            e_segments = st.checkbox('Extra (empty!) segment on last place?')
+            ("---")
+
+        st.write(len(keywords), ' segments of ', shape[1], ' entered.')
+        st.write(keywords)
+
+        if len(keywords) == shape[1] or e_segments:
+
+            with st.container():
+
+                st.write("---")
+
+                left_column, right_column = st.columns(2)
+
+                with left_column:
+                    # https://github.com/ohtaman/streamlit-sortables
+                    
+                    st.markdown("### Segments in the order they should be.")
+                    sorted_items1 = sort_items(df1.columns.to_list(), direction='vertical')
+
+                with right_column:
+                    st.markdown("### Map the segments so that they match the segments on the left!")
+                    sorted_items2 = sort_items(keywords, direction='vertical')
 
             
-            if len(terminology) == 2:
-                st.write("")
-                st.write("##### is the data stored as Rn & Rev or Rn & ADR? (DOES NOT WORK CURRENTLY)")
-                option = st.radio(
-                    label="",
-                    options=('No disered option', 'Rn & Rev', 'Rn & ADR'))
+                st.write('## Select starting year of first sheet.')
+                year = st.select_slider(
+                    label=".",
+                    options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
 
-                if option == 'Rn & Rev':
-                    st.write('You selected Rn & Rev.')
-                elif option == 'Rn & ADR':
-                    st.write('You selected Rn & ADR.')
-                else:
-                    st.write("You didn't select anything, if disered combination isn't present, please contact JUYO.")
+                st.write(year)
 
-                skip_term = st.checkbox('Want to skip terminology on certain places?')
+                terminology = st_tags(
+                    label="""
+                        # Enter the terminology used in Excel file for roomnights and revenue:
+                        For example; roonnights = Rms, Rn, etc. Revenue = Rev, Rvu, etc.
+                        """,
+                    text='Press enter to add more',
+                    suggestions=['rn', 'RN', 'Rn', 
+                                'Rev', 'REV', 'rev', 
+                                'ADR', 'Adr', 'adr',
+                                ],
+                    maxtags = 2,
+                    key='2')
 
-                if skip_term:
-                    #FIXME Dit moet na row of column kiezen komen! Goed nadenken hoe dit was ingericht
-                    l_c, r_c = st.columns(2)
+                st.warning(f"""
+                    ##### Always put the terminology of roomnights as first!, then revenue or ADR! 
+                    {len(terminology)} terminology of {2} entered.
+                    """, icon="⚠️")
+
+                
+                if len(terminology) == 2:
+                    st.write("")
+                    st.write("##### is the data stored as Rn & Rev or Rn & ADR? (DOES NOT WORK CURRENTLY)")
+                    option = st.radio(
+                        label=".",
+                        options=('No disered option', 'Rn & Rev', 'Rn & ADR'))
+
+                    if option == 'Rn & Rev':
+                        st.write('You selected Rn & Rev.')
+                    elif option == 'Rn & ADR':
+                        st.write('You selected Rn & ADR.')
+                    else:
+                        st.write("You didn't select anything, if disered combination isn't present, please contact JUYO.")
+
+                    skip_term = st.checkbox('Want to skip terminology on certain places?')
+
+                    if skip_term:
+                        #FIXME Dit moet na row of column kiezen komen! Goed nadenken hoe dit was ingericht
+                        l_c, r_c = st.columns(2)
+
+                        with l_c:
+                            Skipper = st_tags(
+                                label='#### TEST!!! to skip terminology:',
+                                text='Press enter to add more',
+                                suggestions=['1', '2', '3', 
+                                            '4', '5', '6'],
+                                maxtags = 5,
+                                key='3')
+
+                        with r_c:
+                            Skipper1 = st_tags(
+                                label='#### TEST!!! to skip terminology: Colums',
+                                text='Press enter to add more',
+                                suggestions=['1', '2', '3', 
+                                            '4', '5', '6'],
+                                maxtags = 5,
+                                key='4')
+                    else:
+                        Skipper = []
+                        Skipper1 = []
                     
-                    with l_c:
-                        Skipper = st_tags(
-                            label='#### TEST!!! to skip terminology:',
-                            text='Press enter to add more',
-                            suggestions=['1', '2', '3', 
-                                        '4', '5', '6'],
-                            maxtags = 5,
-                            key='3')
 
-                    with r_c:
-                        Skipper1 = st_tags(
-                            label='#### TEST!!! to skip terminology: Colums',
-                            text='Press enter to add more',
-                            suggestions=['1', '2', '3', 
-                                        '4', '5', '6'],
-                            maxtags = 5,
-                            key='4')
-
-                storage = st.radio(
-                    label=" is the data stored in rows or in columns?",
-                    options=('Rows', 'Columns'))
-             
-                if storage == 'Rows':
-                    row_n = st.text_input("in which row can the terminology be found?")
-                    if row_n:
-                        if st.checkbox("want to store the input for future reference?"):
+                    storage = st.radio(
+                        label=" is the data stored in rows or in columns?",
+                        options=('Rows', 'Columns'))
+                
+                    if storage == 'Rows':
+                        row_n = st.text_input("in which row can the terminology be found?")
+                        if row_n:
+                            if st.checkbox("want to store the input for future reference?"):
+                                if st.button('store data'): 
+                                    save_storage()
+                                    if st.button("Start converting process."): run_process()
                             if st.button("Start converting process."): run_process()
-                else:
-                    row_n = st.text_input("in which column can the terminology be found?")
-                    row_n = ord(row_n) - 96
-                    if row_n:
-                        if st.checkbox("want to store the input for future reference?"):
+                    else:
+                        row_n = st.text_input("in which column can the terminology be found?")
+                        row_n = ord(row_n) - 96
+                        if row_n:
+                            if st.checkbox("want to store the input for future reference?"):
+                                if st.button('stora date '): 
+                                    save_storage()
+                                    if st.button("Start converting process."): run_process()
                             if st.button("Start converting process."): run_process()
-                    print(row_n)
+                        print(row_n)
 
-except Exception:
-    traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+elif stro == 'Yes':
+    st.write('Hallo')
+    #st.header("JSON file storage")
+
+    uploaded_file_JSON = st.file_uploader("Upload json file", type=".json")
+
+    data_json = pd.read_json(uploaded_file_JSON, orient='index')
+    data_json = data_json.transpose()
+    data_json.dropna()
+
+    for x in data_json['iTerm'].dropna(): pass
+
+    st.write('## Select starting year of first sheet.')
+    year = st.select_slider(
+        label=".",
+        options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
+
+    st.write(year)
+
+    if st.button("Start converting process."): run_process()
+
+else:
+    st.write('please select a option.')
