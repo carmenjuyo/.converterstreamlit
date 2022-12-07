@@ -187,11 +187,11 @@ def run_process():
         print(f"terminology (iTerm): {iTerm}")
         print(f"months (iDays): {iDays}")
         print(f"sorting (iSort): {iSort}")
-
+        
+        wb = openpyxl.load_workbook(uploaded_file_CLIENT, data_only=True)
+        
         for x in range(len(iMonths)):
             
-            wb = openpyxl.load_workbook(uploaded_file_CLIENT, data_only=True)
-
             ws = wb[(iMonths[x])]
 
             rn_c = 0
@@ -496,7 +496,7 @@ with st.container():
 
             tabs = pd.ExcelFile(uploaded_file_CLIENT).sheet_names
 
-            cols = st.multiselect('select sheets:', tabs)
+            cols = st.multiselect('Select sheets in the chronological order of the months:', tabs)
 
             st.write('You selected:', cols) 
 
