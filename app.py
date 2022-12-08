@@ -23,6 +23,20 @@ hide_default_format = """
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
 
+def run_credentials():
+    credentials = {
+            "type": st.secrets["gcp_service_account"]["type"],
+            "project_id": st.secrets["gcp_service_account"]["project_id"],
+            "private_key_id": st.secrets["gcp_service_account"]["private_key_id"],
+            "private_key": st.secrets["gcp_service_account"]["private_key"],
+            "client_email": st.secrets["gcp_service_account"]["client_email"],
+            "client_id": st.secrets["gcp_service_account"]["client_id"],
+            "auth_uri": st.secrets["gcp_service_account"]["auth_uri"],
+            "token_uri": st.secrets["gcp_service_account"]["token_uri"],
+            "auth_provider_x509_cert_url": st.secrets["gcp_service_account"]["auth_provider_x509_cert_url"],
+            "client_x509_cert_url": st.secrets["gcp_service_account"]["client_x509_cert_url"]
+        }
+    return(credentials)
 
 def save_storage():
     with st.sidebar:
@@ -68,18 +82,7 @@ def save_storage():
 
             json_string = json.dumps(data_storage)
 
-            credentials = {
-                "type": st.secrets["gcp_service_account"]["type"],
-                "project_id": st.secrets["gcp_service_account"]["project_id"],
-                "private_key_id": st.secrets["gcp_service_account"]["private_key_id"],
-                "private_key": st.secrets["gcp_service_account"]["private_key"],
-                "client_email": st.secrets["gcp_service_account"]["client_email"],
-                "client_id": st.secrets["gcp_service_account"]["client_id"],
-                "auth_uri": st.secrets["gcp_service_account"]["auth_uri"],
-                "token_uri": st.secrets["gcp_service_account"]["token_uri"],
-                "auth_provider_x509_cert_url": st.secrets["gcp_service_account"]["auth_provider_x509_cert_url"],
-                "client_x509_cert_url": st.secrets["gcp_service_account"]["client_x509_cert_url"]
-            }
+            credentials = run_credentials()
 
             gc = gspread.service_account_from_dict(credentials)
 
@@ -98,22 +101,13 @@ def save_storage():
             # //TODO FIND last column used
             # //TODO convert that column into letter like here down
             # //TODO make key for cell 1 to use a key to find
-
-            # x = 1
-            # column_count = 0
-            # while column_count == 0:
-            #     if sh.sheet1.cell(row=1, col=x).value == "":
-            #         print(f'{sh.sheet1.cell(1, x).address} not empty')
-            #         print(sh.sheet1.cell(1, x).value)
-            #         column_count = column_count + 1
-            #     else:
-            #         x = x + 1
-            #         print(sh.sheet1.cell(1, x).address)
-            #         print(sh.sheet1.cell(1, x).value)
             
-            start_letter = 'A'
-            end_letter = 'A'
-            start_row = 1
+            a=len(sh.sheet1.row_values(1)) + 65
+            letter = chr(a)
+            
+            start_letter = letter
+            end_letter = letter
+            start_row = 2
             end_row = start_row + len(gs_storage) - 1
             range1 = "%s%d:%s%d" % (start_letter, start_row, end_letter, end_row)
             
@@ -125,13 +119,14 @@ def save_storage():
 
             print(f'{result_str}{uploaded_file_CLIENT[:5]}')
 
-            sh.sheet1.update_cell(1, 1, result_str)
-
             z = 0
             for x in range(len(gs_storage)):
                 cell_list[z].value = gs_storage[x]
                 z = z + 1
             sh.sheet1.update_cells(cell_list)
+
+            a = a - 64
+            sh.sheet1.update_cell(1, a, f'{result_str}{uploaded_file_CLIENT[:5]}')
 
             st.write("""
                 # Here you can check your input for future use.
@@ -473,7 +468,7 @@ def run_process():
             if s == len(iSegments):
                 x = 2
                 s = 1
-                t = 2 + (len(iDataRnT[i]))
+                t = 2 + (len(iDataRnT[i])) # Is dit niet gewoon + Len again?
             else:
                 s = s + 1
                 x = x + 2
@@ -749,20 +744,36 @@ with st.container():
 
         elif stro == 'Yes':
 
-            uploaded_file_JSON = st.file_uploader("Upload json file", type=".json")
+            key_s = st.text_input("Enter key")
 
-            if uploaded_file_JSON:
-                data_json = pd.read_json(uploaded_file_JSON, orient='index')
-                data_json = data_json.transpose()
-                data_json.dropna()
+            try: 
+                credentials = run_credentials()
 
-                st.write('## Select starting year of first sheet.')
+                gc = gspread.service_account_from_dict(credentials)
 
-                year = st.select_slider(
-                    label=".",
-                    options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
+                sh = gc.open(st.secrets["private_gsheets_url"])
+                                    
+            except Exception:
+                traceback.print_exc()
 
-                if st.button("Start converting process.", key="run1"): run_process()
+            try:
+                cell = sh.sheet1.findall(key_s)
+                
+                loc = str(cell[0])
+                print(loc[9:10])
+                values_list = sh.sheet1.col_values(loc[9:10])
+                st.write(values_list)
+
+            except IndexError:
+                st.write('❌ No match came forward')
+
+            st.write('## Select starting year of first sheet.')
+
+            year = st.select_slider(
+                label=".",
+                options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
+
+            if st.button("Start converting process.", key="run1"): run_process()
 
         else:
             st.write('please select a option.')
