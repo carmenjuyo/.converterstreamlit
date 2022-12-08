@@ -143,6 +143,7 @@ def save_storage():
         st.success('Input saved!')
 
 def run_process():
+    # //TODO Make all the variables the SAME (e.g. row_n storage[0]!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     with st.spinner('runnning process...'):
 
         print(f"starting process...")
@@ -205,6 +206,7 @@ def run_process():
                 elif iDataSt_l[0] < x < iLoc_l[0]:
                     print(values_list[x]) # Moet nog voor adr of rev zijn
                 elif iLoc_l[0] < x:
+                    json_storage.append(values_list[x])
                     iLoc_l.append(values_list[x])
 
             for x in cols: iMonths.append(x)
