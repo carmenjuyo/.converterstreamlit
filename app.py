@@ -1,16 +1,19 @@
 from datetime import datetime
+import json
 from streamlit_sortables import sort_items
 from streamlit_tags import st_tags
 from fuzzywuzzy import process
-from fuzzywuzzy import fuzz
 import pandas as pd
 import streamlit as st
 import openpyxl
 import traceback
-import json
+import gspread
+import random
+import string
 
 # Set up page config
 st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_clockwise:", layout="wide")#, initial_sidebar_state="collapsed")
+
 #header {visibility: hidden;}
 hide_default_format = """
        <style>
@@ -20,81 +23,133 @@ hide_default_format = """
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
 
-def check_segments():
-    
-    juyo_segments = []
-    client_segments = []
-    segments_score = []
-
-    for x in sorted_items1: juyo_segments.append(x.lower())
-    for x in sorted_items2: client_segments.append(x.lower())
-
-    for x in range(len(client_segments)):
-
-        str2Match = juyo_segments[x]
-        strOptions = client_segments[x]
-
-        highest =  fuzz.ratio(str2Match,strOptions)
-        
-        print(highest)
-
 
 def save_storage():
-
-    print('Start storage...')
-
-    data_storage = {}
-
-    iSegments = []
-    iTerm = []
-    iSort = []
-    iSkipper = []
-    iSkipper1 = []
-    iDataSt = []
-    iLoc = []
-
-    for x in sorted_items2: iSegments.append(x)
-    for x in terminology: iTerm.append(x)
-    for x in keywords: iSort.append(x)
-    for x in Skipper: iSkipper.append(x)
-    for x in Skipper1: iSkipper1.append(x)
-
-    if option == 'Rn & Rev':
-        iDataSt.append('Rev')
-    elif option == 'Rn & ADR':
-        iDataSt.append('ADR')
-
-    if storage == 'Rows':
-        iLoc.append('Rows')
-        iLoc.append(row_n)
-    else:
-        iLoc.append('Columns')
-        iLoc.append(row_n)
-
-    data_storage['iSegments'] = iSegments
-    data_storage['iTerm'] = iTerm
-    data_storage['iSort'] = iSort
-    data_storage['iSkipper'] = iSkipper
-    data_storage['iSkipper1'] = iSkipper1
-    data_storage['iDataSt'] = iDataSt
-    data_storage['iLoc'] = iLoc
-
-    json_string = json.dumps(data_storage)
-
     with st.sidebar:
-        st.write("""
-            # Here you can download your input for future use.
-             Check if the data is complete and then download the json file.
-             """)
+        with st.spinner('Storing data...'):
+            print('Start storage...')
 
-        st.json(json_string, expanded=False)
+            data_storage = {}
+            gs_storage = []
 
-        st.download_button(
-            label="Download JSON storage file.",
-            file_name=f"{uploaded_file_JUYO[:5]}_data_JUYO.json",
-            mime="application/json",
-            data=json_string,
-        ) 
+            iSegments = []
+            iTerm = []
+            iSort = []
+            iSkipper = []
+            iSkipper1 = []
+            iDataSt = []
+            iLoc = []
+
+            for x in sorted_items2: iSegments.append(x)
+            for x in terminology: iTerm.append(x)
+            for x in keywords: iSort.append(x)
+            for x in Skipper: iSkipper.append(x)
+            for x in Skipper1: iSkipper1.append(x)
+
+            if option == 'Rn & Rev':
+                iDataSt.append('Rev')
+            elif option == 'Rn & ADR':
+                iDataSt.append('ADR')
+
+            if storage == 'Rows':
+                iLoc.append('Rows')
+                iLoc.append(row_n)
+            else:
+                iLoc.append('Columns')
+                iLoc.append(row_n)
+
+            data_storage['iSegments'] = iSegments
+            data_storage['iTerm'] = iTerm
+            data_storage['iSort'] = iSort
+            data_storage['iSkipper'] = iSkipper
+            data_storage['iSkipper1'] = iSkipper1
+            data_storage['iDataSt'] = iDataSt
+            data_storage['iLoc'] = iLoc
+
+            json_string = json.dumps(data_storage)
+
+            credentials = {
+                "type": st.secrets["gcp_service_account"]["type"],
+                "project_id": st.secrets["gcp_service_account"]["project_id"],
+                "private_key_id": st.secrets["gcp_service_account"]["private_key_id"],
+                "private_key": st.secrets["gcp_service_account"]["private_key"],
+                "client_email": st.secrets["gcp_service_account"]["client_email"],
+                "client_id": st.secrets["gcp_service_account"]["client_id"],
+                "auth_uri": st.secrets["gcp_service_account"]["auth_uri"],
+                "token_uri": st.secrets["gcp_service_account"]["token_uri"],
+                "auth_provider_x509_cert_url": st.secrets["gcp_service_account"]["auth_provider_x509_cert_url"],
+                "client_x509_cert_url": st.secrets["gcp_service_account"]["client_x509_cert_url"]
+            }
+
+            gc = gspread.service_account_from_dict(credentials)
+
+            sh = gc.open(st.secrets["private_gsheets_url"])
+
+            val = sh.sheet1.cell(1, 1).value
+
+            for key, values in data_storage.items():
+                gs_storage.append(key)
+                if(isinstance(values, list)):
+                    for value in values:
+                        gs_storage.append(value)
+                else:
+                    gs_storage.append(value)
+
+            # //TODO FIND last column used
+            # //TODO convert that column into letter like here down
+            # //TODO make key for cell 1 to use a key to find
+
+            # x = 1
+            # column_count = 0
+            # while column_count == 0:
+            #     if sh.sheet1.cell(row=1, col=x).value == "":
+            #         print(f'{sh.sheet1.cell(1, x).address} not empty')
+            #         print(sh.sheet1.cell(1, x).value)
+            #         column_count = column_count + 1
+            #     else:
+            #         x = x + 1
+            #         print(sh.sheet1.cell(1, x).address)
+            #         print(sh.sheet1.cell(1, x).value)
+            
+            start_letter = 'A'
+            end_letter = 'A'
+            start_row = 1
+            end_row = start_row + len(gs_storage) - 1
+            range1 = "%s%d:%s%d" % (start_letter, start_row, end_letter, end_row)
+            
+            cell_list = sh.sheet1.range(range1)
+
+            sh.sheet1.update_cells(cell_list)
+
+            result_str = ''.join(random.choice(string.ascii_letters) for i in range(8))
+
+            print(f'{result_str}{uploaded_file_CLIENT[:5]}')
+
+            sh.sheet1.update_cell(1, 1, result_str)
+
+            z = 0
+            for x in range(len(gs_storage)):
+                cell_list[z].value = gs_storage[x]
+                z = z + 1
+            sh.sheet1.update_cells(cell_list)
+
+            st.write("""
+                # Here you can check your input for future use.
+                Save the generated key for later purposes.
+                """)
+
+            st.json(json_string, expanded=False)
+        
+        st.write(f'''
+            #### Here is your key: 
+            {result_str}{uploaded_file_CLIENT[:5]}
+            ##### Save it well.
+            ''')
+        st.success('Input saved!')
+
+
+
+
 
 def run_process():
     with st.spinner('runnning process...'):
@@ -391,12 +446,10 @@ def run_process():
         df2 = pd.DataFrame(data=d)
 
         df2 = df2.T
-
-        st.dataframe(df2)
-
+        
         wb = openpyxl.Workbook()
         sheet = wb.active
-        sheet.title='test'
+        sheet.title='sheet0'
 
         y = 1
         for x in range(len(all_columns)):
@@ -407,7 +460,7 @@ def run_process():
         y = 2 # ROW
         t = 2 # ROW
         s = 1 # SEGMENTS
-        
+
         # //FIXME Hier gaat iets mis wanneer er meerdere maanden zijn!
         for i in range(len(iDataRnT)):
 
@@ -600,15 +653,13 @@ with st.container():
                             st.markdown("### Map the segments so that they match the segments on the left!")
                             sorted_items2 = sort_items(keywords, direction='vertical')
 
-                        if st.button('checksegments'): check_segments()
-
                         st.write('## Select starting year of first sheet.')
                         year = st.select_slider(
                             label=".",
                             options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
 
                         st.write(year)
-
+                        # //IDEA for each rn of rev make a seperate input balk for to make it clearer!
                         terminology = st_tags(
                             label="""
                                 # Enter the terminology used in Excel file for roomnights and revenue:
@@ -678,19 +729,19 @@ with st.container():
                                 row_n = st.text_input("in which row can the terminology be found?")
                                 if row_n:
                                     if st.checkbox("want to store the input for future reference?"):
-                                        if st.button('store data'): 
+                                        if st.button('store data', key="store"): 
                                             save_storage()
-                                            if st.button("Start converting process."): run_process()
-                                    if st.button("Start converting process."): run_process()
+                                            if st.button("Start converting process.", key="run3"): run_process()
+                                    if st.button("Start converting process.", key="run4"): run_process()
                             else:
                                 row_n = st.text_input("in which column can the terminology be found?")
                                 row_n = ord(row_n) - 96
                                 if row_n:
                                     if st.checkbox("want to store the input for future reference?"):
-                                        if st.button('stora date '): 
+                                        if st.button('stora date ', key="store2"): 
                                             save_storage()
-                                            if st.button("Start converting process."): run_process()
-                                    if st.button("Start converting process."): run_process()
+                                            if st.button("Start converting process.", key='run2'): run_process()
+                                    if st.button("Start converting process.", key="run"): run_process()
                                 print(row_n)
 
             except Exception:
@@ -711,7 +762,7 @@ with st.container():
                     label=".",
                     options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
 
-                if st.button("Start converting process."): run_process()
+                if st.button("Start converting process.", key="run1"): run_process()
 
         else:
             st.write('please select a option.')
