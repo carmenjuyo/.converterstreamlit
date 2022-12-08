@@ -76,7 +76,7 @@ def save_storage():
             data_storage['iTerm'] = iTerm
             data_storage['iSort'] = iSort
             data_storage['iSkipper'] = iSkipper
-            data_storage['iSkipper1'] = iSkipper1
+            data_storage['iStepper'] = iSkipper1
             data_storage['iDataSt'] = iDataSt
             data_storage['iLoc'] = iLoc
 
@@ -142,10 +142,6 @@ def save_storage():
             ''')
         st.success('Input saved!')
 
-
-
-
-
 def run_process():
     with st.spinner('runnning process...'):
 
@@ -169,7 +165,6 @@ def run_process():
         row_n_storage = []
         Skipper_s = []
         Skipper_s1 = []
-        Storage_1 = []
         sMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
 
         if stro == 'No':
@@ -196,9 +191,23 @@ def run_process():
 
         elif stro == 'Yes': 
 
-            for x in data_json['iSegments'].dropna(): iSegments.append(x)
+            for x in range(len(values_list)):
+                if iSegments_l[0] < x < iTerm_l[0]:
+                    iSegments.append(values_list[x])
+                elif iTerm_l[0] < x < iSort_l[0]:
+                    iTerm.append(values_list[x])
+                elif iSort_l[0] < x < iSkipper_l[0]:
+                    iSort.append(values_list[x])
+                elif iSkipper_l[0] < x < iStepper_l[0]:
+                    Skipper_s.append(values_list[x])
+                elif iStepper_l[0] < x < iDataSt_l[0]:
+                    Skipper_s1.append(values_list[x])
+                elif iDataSt_l[0] < x < iLoc_l[0]:
+                    print(values_list[x]) # Moet nog voor adr of rev zijn
+                elif iLoc_l[0] < x:
+                    iLoc_l.append(values_list[x])
+
             for x in cols: iMonths.append(x)
-            for x in data_json['iTerm'].dropna(): iTerm.append(x)
             for x in iMonths:
                 str2Match = x
                 strOptions = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
@@ -206,31 +215,6 @@ def run_process():
                 highest = process.extractOne(str2Match,strOptions)
                 highest = highest
                 iDays.append(highest)
-            
-            for x in data_json['iSort'].dropna(): iSort.append(x)
-
-            # //TODO Kan inprincipe weg. Omdat iLoc[0] altijd nu aangeeft was het is.
-            if data_json['iLoc'].iloc[0] == "Rows":
-
-                json_storage.append(data_json['iLoc'].iloc[0])
-                row_n_storage.append(data_json['iLoc'].iloc[1])
-
-            elif data_json['iLoc'].iloc[0] == 'Columns':
-                
-                json_storage.append(data_json['iLoc'].iloc[0])
-                row_n_storage.append(data_json['iLoc'].iloc[1])
-
-            else:
-                st.warning('Error at iLoc process')
-                return
-            
-            for x in data_json['iSkipper'].dropna(): Skipper_s.append(x)
-            Skipper_s = [round(float(i)) for i in Skipper_s]
-            for x in data_json['iSkipper1'].dropna(): Skipper_s1.append(x)
-            Skipper_s1 = [round(float(i)) for i in Skipper_s1]
-
-        else:
-            return
 
         print(f"iSegments: {iSegments}")
         print(f"sheets (iMonths): {iMonths}")
@@ -760,9 +744,18 @@ with st.container():
                 cell = sh.sheet1.findall(key_s)
                 
                 loc = str(cell[0])
-                print(loc[9:10])
+                
                 values_list = sh.sheet1.col_values(loc[9:10])
-                st.write(values_list)
+
+                iSegments_l = [i for i, s in enumerate(values_list) if 'iSegments' in s]
+                iTerm_l = [i for i, s in enumerate(values_list) if 'iTerm' in s]
+                iSort_l = [i for i, s in enumerate(values_list) if 'iSort' in s]
+                iSkipper_l = [i for i, s in enumerate(values_list) if 'iSkipper' in s]
+                iStepper_l = [i for i, s in enumerate(values_list) if 'iStepper' in s]
+                iDataSt_l = [i for i, s in enumerate(values_list) if 'iDataSt' in s]
+                iLoc_l = [i for i, s in enumerate(values_list) if 'iLoc' in s]
+
+                st.json(values_list, expanded=False)
 
             except IndexError:
                 st.write('❌ No match came forward')
