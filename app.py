@@ -15,11 +15,10 @@ from PIL import Image
 # Set up page config
 st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_clockwise:", layout="wide")#, initial_sidebar_state="collapsed")
 
-#header {visibility: hidden;}
 hide_default_format = """
        <style>
        footer {visibility: hidden;}
-       
+       header {visibility: hidden;}
        </style>
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
