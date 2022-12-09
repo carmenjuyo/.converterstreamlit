@@ -762,15 +762,14 @@ with st.container():
                 
                 values_list = sh.sheet1.col_values(loc[9:10])
 
-                iSegments_l = [i for i, s in enumerate(values_list) if 'iSegments' in s]
-                iTerm_l = [i for i, s in enumerate(values_list) if 'iTerm' in s]
-                iSort_l = [i for i, s in enumerate(values_list) if 'iSort' in s]
-                iSkipper_l = [i for i, s in enumerate(values_list) if 'iSkipper' in s]
-                iStepper_l = [i for i, s in enumerate(values_list) if 'iStepper' in s]
-                iDataSt_l = [i for i, s in enumerate(values_list) if 'iDataSt' in s]
-                iLoc_l = [i for i, s in enumerate(values_list) if 'iLoc' in s]
-
-                st.json(values_list, expanded=False)
+                with st.echo():
+                    iSegments_l = [i for i, s in enumerate(values_list) if 'iSegments' in s]
+                    iTerm_l = [i for i, s in enumerate(values_list) if 'iTerm' in s]
+                    iSort_l = [i for i, s in enumerate(values_list) if 'iSort' in s]
+                    iSkipper_l = [i for i, s in enumerate(values_list) if 'iSkipper' in s]
+                    iStepper_l = [i for i, s in enumerate(values_list) if 'iStepper' in s]
+                    iDataSt_l = [i for i, s in enumerate(values_list) if 'iDataSt' in s]
+                    iLoc_l = [i for i, s in enumerate(values_list) if 'iLoc' in s]
 
             except:
                 st.write('❌ No match found!')
@@ -778,7 +777,7 @@ with st.container():
             st.write('## Select starting year of first sheet.')
 
             year = st.select_slider(
-                label=".",
+                label="# .",
                 options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
 
             if st.button("Start converting process.", key="run1"): run_process()
