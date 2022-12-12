@@ -365,7 +365,7 @@ def run_process():
                 if rv_c1 != len(iSegments):
                     
                     st.error(f"""
-                        ##### ERROR for: {iTerm[1]}. In total {len(iSegments)} segmets entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
+                        ##### ERROR for: {iTerm[1]}. In total {len(iSegments)} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
                         See below an overview of the segments and their range that were succeeded:
                     """, 
                     icon="❌")
@@ -393,8 +393,8 @@ def run_process():
                             #print(f"-- Level & Name match: {strFind} = {i}")
                             pass
                         else:
-                            print(f"- Name match: {strFind} : {i} - {y}")
-                            print(f"- reordering...")
+                            #print(f"- Name match: {strFind} : {i} - {y}")
+                            #print(f"- reordering...")
                             
                             arrTemp = iDataRnT[y + a]
                             arrTempV = iDataRvT[y + a]
