@@ -492,7 +492,7 @@ def run_process():
         st.download_button(
             label="click me to download excel",
             data=file,
-            file_name=f'{uploaded_file_JUYO}.xlsx',
+            file_name=f'{uploaded_file_JUYO.name}',
             mime="application/octet-stream"
             )
 
@@ -511,7 +511,6 @@ with st.container():
     with r_column:
         st.write("")
 
-
 with st.container():
 
     st.write("---")
@@ -525,6 +524,10 @@ with st.container():
         uploaded_file_CLIENT = st.file_uploader("Upload client file", type=".xlsx")
 
         if uploaded_file_CLIENT:
+            
+            if uploaded_file_CLIENT.name[-5:] == '.xlsb':
+                print('xslb')
+                # //TODO Find a way to convert this
 
             st.markdown("### Select wanted sheets in chronological order for conversion.")
 
@@ -591,7 +594,7 @@ with st.container():
                     Because everyone's forecast/ budget file looks different, it is difficult to determine exactly where the segments are.
                     
                     The reason why you need to put the segments in **chronological order** here is, because the script will look only at the index of the postition
-                    pf where the segments are entered here and not the name of the segment..
+                    of where the segments are entered here and not the name of the segment..
 
                     Soon you will have to map the segments in the **correct order**, but not here, because the script needs to know where the segments are in your forecast/ budget file.
 
@@ -675,7 +678,7 @@ with st.container():
                             maxtags = 1,
                             key='t2')
 
-                        terminology = terminologyR + terminologyR1  
+                        terminology = terminologyR + terminologyR1
 
                         storage = st.radio(
                             label=" Where are the terminology stored? In a row or in a column?",
@@ -762,14 +765,13 @@ with st.container():
                 
                 values_list = sh.sheet1.col_values(loc[9:10])
 
-                with st.echo():
-                    iSegments_l = [i for i, s in enumerate(values_list) if 'iSegments' in s]
-                    iTerm_l = [i for i, s in enumerate(values_list) if 'iTerm' in s]
-                    iSort_l = [i for i, s in enumerate(values_list) if 'iSort' in s]
-                    iSkipper_l = [i for i, s in enumerate(values_list) if 'iSkipper' in s]
-                    iStepper_l = [i for i, s in enumerate(values_list) if 'iStepper' in s]
-                    iDataSt_l = [i for i, s in enumerate(values_list) if 'iDataSt' in s]
-                    iLoc_l = [i for i, s in enumerate(values_list) if 'iLoc' in s]
+                iSegments_l = [i for i, s in enumerate(values_list) if 'iSegments' in s]
+                iTerm_l = [i for i, s in enumerate(values_list) if 'iTerm' in s]
+                iSort_l = [i for i, s in enumerate(values_list) if 'iSort' in s]
+                iSkipper_l = [i for i, s in enumerate(values_list) if 'iSkipper' in s]
+                iStepper_l = [i for i, s in enumerate(values_list) if 'iStepper' in s]
+                iDataSt_l = [i for i, s in enumerate(values_list) if 'iDataSt' in s]
+                iLoc_l = [i for i, s in enumerate(values_list) if 'iLoc' in s]
 
             except:
                 st.write('❌ No match found!')
