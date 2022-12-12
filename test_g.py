@@ -9,3 +9,6 @@ result_str = ''.join(random.choice(string.ascii_letters) for i in range(8))
 
 # print random string
 print(result_str)
+
+for x, y in range(10):
+    print(x, y)

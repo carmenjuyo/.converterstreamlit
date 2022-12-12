@@ -498,18 +498,21 @@ def run_process():
 
 # Header of the page
 with st.container():
-    l_column, m_column, r_column = st.columns([1.6,2.5,1])
+    l_column, m_column, r_column = st.columns([3,5,1])
     with l_column:
         st.write("")
     with m_column:
         st.write(
             """
         # ♾️Forecast / budget converter
-        The process of converting the forecast file to the right format.
+        ######  The process of converting the forecast file to the right format.
         """
         )
     with r_column:
         st.write("")
+        imagejuyo = Image.open('JUYO3413_Logo_Gris1.png')
+        st.image(imagejuyo)
+        
 
 with st.container():
 
@@ -533,7 +536,7 @@ with st.container():
 
             tabs = pd.ExcelFile(uploaded_file_CLIENT).sheet_names
 
-            cols = st.multiselect('Select sheets in the **chronological** order of the months:', tabs)
+            cols = st.multiselect('Select sheets / in the **chronological** order of the months:', tabs)
 
             st.write('You selected:', len(cols)) 
 
@@ -559,7 +562,7 @@ with st.container():
 
         st.write("---")
 
-        st.write("## Enter key.")
+        st.write("## Enter passwprd:")
         stro = st.radio(
             label="-",
             options=("Yes", "No"),
@@ -640,7 +643,7 @@ with st.container():
 
                         terminology = []
 
-                        st.write("### Is the data stored as Rn & Rev or Rn & ADR? (DOES NOT WORK CURRENTLY)")
+                        st.write("### Is the data stored as *roomnights and revenue* or *roomnights and ADR*")
                         option = st.radio(
                                 label="## .",
                                 options=('Roomnights & Revenue', 'Roomnights & ADR'))
@@ -681,16 +684,25 @@ with st.container():
                         terminology = terminologyR + terminologyR1
 
                         storage = st.radio(
-                            label=" Where are the terminology stored? In a row or in a column?",
+                            label=f'Are the roomnights and {term} stored in a row or in a column?',
                             options=('Rows', 'Columns'))
+
+                        with st.expander('Click for more explantion'):
+                            st.write(f'Here you can see with what me mean with row or column. E.g.:')
+                            image = Image.open('voorbeeld_excel.png')
+                            st.image(image)
+                            st.write('''In this picture you can see that the terminology of roomnights and revenue is stored in column 'a'.
+                                    So than you will choose *'Columns'* and enter 'a' in the inputbox. If the terminology is stored in a row, then you
+                                    will choose 'Rows' and press the row wanted, e.g.; '6'.
+                            ''')
                     
                         if storage == 'Rows':
-                            row_n = st.text_input("in which row can the terminology be found?")
+                            row_n = st.text_input(f"in which row can the roomnigts and {term} be found?")
                             if row_n:
                                 st.write(f'The terminology can ben found in row {row_n}')
                         
-                        else:
-                            row_n = st.text_input("in which column can the terminology be found?")
+                        elif storage == 'Columns':
+                            row_n = st.text_input(f"in which column can the roomnigts and {term} be found?")
                             row_n = ord(row_n) - 96
                             if row_n:
                                 st.write(f'The terminology can ben found in column {row_n}')
@@ -699,12 +711,20 @@ with st.container():
                         skip_term = st.checkbox('Want to skip terminology on certain places?')
 
                         with st.expander('Click for more explantion'):
-                            st.write(f'You have just indicated the terminology is in {storage} {row_n}. It may happen that on that same {storage} the terminology of totals are included, but should not be included. E.g.:')
+                            st.write(f'You have just indicated the terminology (roomnights and {term}) is in {storage} {row_n}. It may happen that on that same {storage} the terminology (roomnights and {term}) of totals are included, but should not be included. E.g.:')
                             image = Image.open('voorbeeld_excel.png')
                             st.image(image)
                             st.write('''Here you can see that in column A, there are minor 2 segments. But the terminology Rms and REV are used 3 times.
-                                    So if you want to skip the terminology, you have to click the check box and indicate on which places you want to skip the terminology.
+                                    So if you want to skip the terminology, you have to click the check box and indicate on which places you want to skip the terminology.''')
+                                    
+                            st.write('''If you want to skip an item, you must write down the index of that item in the correct order that it needs to be skipped. 
+                                    This is because the order in which you skip items is important. For example, if you have a list of segments that you need to go through and you want to skip the second item, 
+                                    you would need to write down the index "2" to indicate that this is the item you want to skip. This ensures that the system knows which item to skip and in what order to skip it. 
+                                    Additionally, it's important to write down the index in the correct order because the system may not be able to understand or process your request if the index is out of order. 
+                                    So if you want to skip an item, be sure to write down the correct index in the correct order.
                             ''')
+
+                            st.write('If you already seen the error box, good to know that you need to add 1 to the index, as the list is starting from zero (0)')
 
                         if skip_term:
 
@@ -733,6 +753,8 @@ with st.container():
                             Skipper1 = []
                         
                         st.write('---')
+                        st.write('If this is your first time, it is better to first start the converting process instead of storing the data.')
+                        st.write('You will then have a check that the output data is correct')
 
                         if st.button('store data', key="store"): 
                             save_storage()
