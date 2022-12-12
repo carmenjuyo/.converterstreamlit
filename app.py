@@ -724,7 +724,7 @@ with st.container():
                                     So if you want to skip an item, be sure to write down the correct index in the correct order.
                             ''')
 
-                            st.write('If you already seen the error box, good to know that you need to add 1 to the index, as the list is starting from zero (0)')
+                            st.write('If you already seen the error box, it is good to know that you need to add +1 to the index, as the list is starting from zero (0)')
 
                         if skip_term:
 
