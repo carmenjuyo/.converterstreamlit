@@ -1,3 +1,4 @@
+import sys, os
 from datetime import datetime
 import json
 from streamlit_sortables import sort_items
@@ -105,8 +106,6 @@ def save_storage():
 
             sh = gc.open(st.secrets["private_gsheets_url"])
 
-            val = sh.sheet1.cell(1, 1).value
-
             for key, values in data_storage.items():
                 gs_storage.append(key)
                 if(isinstance(values, list)):
@@ -187,6 +186,7 @@ def run_process():
             for x in sorted_items2: iSegments.append(x)
             for x in cols: iMonths.append(x)
             for x in terminology: iTerm.append(x)
+            
             for x in iMonths:
                 str2Match = x
                 strOptions = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
@@ -204,6 +204,7 @@ def run_process():
 
             for x in Skipper: Skipper_s.append(x)
             Skipper_s = [round(float(i)) for i in Skipper_s]
+            
             for x in Skipper1: Skipper_s1.append(x)
             Skipper_s1 = [round(float(i)) for i in Skipper_s1]
 
@@ -212,17 +213,23 @@ def run_process():
             for x in range(len(values_list)):
                 if iSegments_l[0] < x < iTerm_l[0]:
                     iSegments.append(values_list[x])
+
                 elif iTerm_l[0] < x < iSort_l[0]:
                     iTerm.append(values_list[x])
+
                 elif iSort_l[0] < x < iSkipper_l[0]:
                     iSort_t.append(values_list[x])
+
                     iSort.append(values_list[x])
                 elif iSkipper_l[0] < x < iStepper_l[0]:
                     Skipper_s.append(values_list[x])
+
                 elif iStepper_l[0] < x < iDataSt_l[0]:
                     Skipper_s1.append(values_list[x])
+
                 elif iDataSt_l[0] < x < iLoc_l[0]:
                     iDataSt = (values_list[x])
+
                 elif iLoc_l[0] < x:
                     json_storage.append(values_list[x])
                     iLoc_l.append(values_list[x])
@@ -233,6 +240,7 @@ def run_process():
             Skipper_s1 = [round(float(i)) for i in Skipper_s1]
 
             for x in cols: iMonths.append(x)
+            
             for x in iMonths:
                 str2Match = x
                 strOptions = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
@@ -246,263 +254,285 @@ def run_process():
         print(f"terminology (iTerm): {iTerm}")
         print(f"months (iDays): {iDays}")
         print(f"sorting (iSort): {iSort}")
+
+        if len(iTerm) == 0:
+            st.error('Err1: No terminology filled in. Press "enter" after typing the terminology!', icon='❌')
+            return
         
         wb = openpyxl.load_workbook(uploaded_file_CLIENT, data_only=True)
-        
-        for x in range(len(iMonths)):
-            
-            ws = wb[(iMonths[x])]
 
-            rn_c = 0
-            rv_c = 0
-            rn_c1 = 0
-            rv_c1 = 0
-
-            for z in sMonths:
-                try:
-                    iDays[x].index(z)
-                except ValueError:
-                    pass
-                else:
-                    tMonth = z
-                    if x == 0: eMonth = z
-
-            print(f'Current month: {tMonth}')
-
-            if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
-            elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
-            elif tMonth == 'Feb': mDay = 28
-            else: mDay = 30
-
-            if json_storage[0] == 'Rows':
-
-                for i in range(1, ws.max_row + 1):
-                    for j in range(1, ws.max_column + 1):
-                        if i == int(row_n_storage[0]):
-                            if iTerm[0] == ws.cell(i,j).value:
-                                rn_c = rn_c + 1
-                                if int(rn_c) in Skipper_s:
-                                    pass
-                                else:
-                                    rn_c1 = rn_c1 + 1
-                                    cRngn.append(f"{iTerm[0]} {ws.cell(i,j)}")
-                                    for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
-                                        for cell in row:
-                                            iDataRn.append(cell.value)
-                                    
-                                    iDataRnT.append(iDataRn)
-                                    iDataRn = []
+        try:    
+            for x in range(len(iMonths)):
                 
-                if rn_c1 != len(iSegments):
+                ws = wb[(iMonths[x])]
 
-                    st.error(f"""
-                        ##### ERROR for: {iTerm[0]}. In total {len(iSegments)} segmets entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
-                        See below an overview of the segments and their range that were succeeded:
-                    """, 
-                    icon="❌")
-                    st.json(cRngn, expanded=True)
-                    return
+                rn_c = 0
+                rv_c = 0
+                rn_c1 = 0
+                rv_c1 = 0
 
-                for i in range(1, ws.max_row + 1):
-                    for j in range(1, ws.max_column + 1):
-                        if i == int(row_n_storage[0]):
-                            if iTerm[1] == ws.cell(i,j).value:
-                                rv_c = rv_c + 1
-                                if int(rv_c) in Skipper_s1:
-                                    pass
-                                    
-                                else:
-                                    rv_c1 = rv_c1 + 1
-                                    cRngv.append(f"{iTerm[0]} {ws.cell(i,j)}")
-                                    for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
-                                        for cell in row:
-                                            iDataRv.append(round(cell.value,2))
-                                    
-                                    iDataRvT.append(iDataRv)
-                                    iDataRv = []
+                for z in sMonths:
+                    try:
+                        iDays[x].index(z)
+                    except ValueError:
+                        pass
+                    else:
+                        tMonth = z
+                        if x == 0: eMonth = z
 
-                if rv_c1 != len(iSegments):
+                print(f'Current month: {tMonth}')
 
-                    st.error(f"""
-                        ##### ERROR for: {iTerm[1]}. In total {len(iSegments)} segmets entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
-                        See below an overview of the segments and their range that were succeeded:
-                    """, 
-                    icon="❌")
-                    st.json(cRngv, expanded=True)
-                    return
+                if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
+                elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
+                elif tMonth == 'Feb': mDay = 28
+                else: mDay = 30
+
+                if json_storage[0] == 'Rows':
+
+                    for i in range(1, ws.max_row + 1):
+                        for j in range(1, ws.max_column + 1):
+                            if i == int(row_n_storage[0]):
+                                if iTerm[0] == ws.cell(i,j).value:
+                                    rn_c = rn_c + 1
+                                    if int(rn_c) in Skipper_s:
+                                        pass
+                                    else:
+                                        rn_c1 = rn_c1 + 1
+                                        cRngn.append(f"{iTerm[0]} {ws.cell(i,j)}")
+                                        for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
+                                            for cell in row:
+                                                iDataRn.append(cell.value)
+                                        
+                                        iDataRnT.append(iDataRn)
+                                        iDataRn = []
                     
-            else:
-                
-                for i in range(1, ws.max_row + 1):
-                    for j in range(1, ws.max_column + 1):
-                        if j == int(row_n_storage[0]):
-                            if iTerm[0] == ws.cell(i,j).value:
-                                rn_c = rn_c + 1
-                                if int(rn_c) in Skipper_s:
-                                    pass
-                                    
-                                else:
-                                    rn_c1 = rn_c1 + 1
-                                    cRngn.append(f"{iTerm[0]} {ws.cell(i,j)}")
-                                    for column in ws.iter_cols(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
-                                        for cell in column:
-                                            iDataRn.append(cell.value)
-                                    
-                                    iDataRnT.append(iDataRn)
-                                    iDataRn = []
+                    if rn_c1 != len(iSegments):
 
-                if rn_c1 != len(iSegments):
-                    
-                    st.error(f"""
-                        ##### ERROR for: {iTerm[0]}. In total {len(iSegments)} segmets entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
-                        See below an overview of the segments and their range that were succeeded:
-                    """, 
-                    icon="❌")
-                    st.json(cRngn, expanded=True)
-                    return
+                        st.error(f"""
+                            ##### Err2: ERROR for: {iTerm[0]}. In total {len(iSegments)} segmets entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
+                            See below an overview of the segments and their range that were succeeded:
+                        """, 
+                        icon="❌")
+                        st.json(cRngn, expanded=True)
+                        return
 
-                for i in range(1, ws.max_row + 1):
-                    for j in range(1, ws.max_column + 1):
-                        if j == int(row_n_storage[0]):
-                            if iTerm[1] == ws.cell(i,j).value:
-                                rv_c = rv_c + 1
-                                if int(rv_c) in Skipper_s1:
-                                    pass
+                    for i in range(1, ws.max_row + 1):
+                        for j in range(1, ws.max_column + 1):
+                            if i == int(row_n_storage[0]):
+                                if iTerm[1] == ws.cell(i,j).value:
+                                    rv_c = rv_c + 1
+                                    if int(rv_c) in Skipper_s1:
+                                        pass
+                                        
+                                    else:
+                                        rv_c1 = rv_c1 + 1
+                                        cRngv.append(f"{iTerm[0]} {ws.cell(i,j)}")
+                                        for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
+                                            for cell in row:
+                                                iDataRv.append(round(cell.value,2))
+                                        
+                                        iDataRvT.append(iDataRv)
+                                        iDataRv = []
 
-                                else:
-                                    rv_c1 = rv_c1 + 1
-                                    cRngv.append(f"{iTerm[1]} {ws.cell(i,j)}")
-                                    for column in ws.iter_cols(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
-                                        for cell in column:
-                                            iDataRv.append((cell.value))
-                                    
-                                    iDataRvT.append(iDataRv)
-                                    iDataRv = []
+                    if rv_c1 != len(iSegments):
 
-                if rv_c1 != len(iSegments):
-                    
-                    st.error(f"""
-                        ##### ERROR for: {iTerm[1]}. In total {len(iSegments)} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
-                        See below an overview of the segments and their range that were succeeded:
-                    """, 
-                    icon="❌")
-                    st.json(cRngv, expanded=True)
-                    return
-                    
-        print("---")
-
-        a = 0
-        for x in range(len(iMonths)):
-            
-            for i in range(len(iSegments)):
-
-                strFind = iSegments[i]
-
-                for y in range(len(iSort)):
-
-                    strStored = iSort[y]
-
-                    #print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
-
-                    if strFind == strStored:
+                        st.error(f"""
+                            ##### Err3: ERROR for: {iTerm[1]}. In total {len(iSegments)} segmets entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
+                            See below an overview of the segments and their range that were succeeded:
+                        """, 
+                        icon="❌")
+                        st.json(cRngv, expanded=True)
+                        return
                         
-                        if i == y:
-                            #print(f"-- Level & Name match: {strFind} = {i}")
-                            pass
-                        else:
-                            #print(f"- Name match: {strFind} : {i} - {y}")
-                            #print(f"- reordering...")
-                            
-                            arrTemp = iDataRnT[y + a]
-                            arrTempV = iDataRvT[y + a]
-
-                            iDataRnT[y + a] = iDataRnT[i + a]
-                            iDataRvT[y + a] = iDataRvT[i + a]
-
-                            iDataRnT[i + a] = arrTemp
-                            iDataRvT[i + a] = arrTempV
-
-                            temp = iSort[i]
-
-                            iSort[i] = iSegments[i]
-                            iSort[y] = temp
-            
-            if x == 0:
-                a = len(iSort)
-            else:
-                a = a + len(iSort)
-
-            iSort.clear()
-            if stro == 'No':
-                for z in keywords: iSort.append(z)
-            elif stro == 'Yes':
-                for z in iSort_t: iSort.append(z)
-
-        d =[]
-
-        for x in range(len(iDataRnT)):
-            d.append(iDataRnT[x])
-            d.append(iDataRvT[x])
-
-        df2 = pd.DataFrame(data=d)
-
-        df2 = df2.T
-        
-        wb = openpyxl.Workbook()
-        sheet = wb.active
-        sheet.title='sheet0'
-
-        y = 1
-        for x in range(len(all_columns)):
-            sheet.cell(row=1, column=y).value=all_columns[x]
-            y = y + 1
-
-        x = 2 # COLUMN
-        y = 2 # ROW
-        t = 2 # ROW
-        s = 1 # SEGMENTS
-        
-        for i in range(len(iDataRnT)):
-
-            for z in range(len(iDataRnT[i])):
-
-                sheet.cell(row=y, column=x).value=iDataRnT[i][z]
-                if iDataSt == "ADR":
-                    sheet.cell(row=y, column=x+1).value=(iDataRnT[i][z] * iDataRvT[i][z])
                 else:
-                    sheet.cell(row=y, column=x+1).value=iDataRvT[i][z]
+                    
+                    for i in range(1, ws.max_row + 1):
+                        for j in range(1, ws.max_column + 1):
+                            if j == int(row_n_storage[0]):
+                                if iTerm[0] == ws.cell(i,j).value:
+                                    rn_c = rn_c + 1
+                                    if int(rn_c) in Skipper_s:
+                                        pass
+                                        
+                                    else:
+                                        rn_c1 = rn_c1 + 1
+                                        cRngn.append(f"{iTerm[0]} {ws.cell(i,j)}")
+                                        for column in ws.iter_cols(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
+                                            for cell in column:
+                                                iDataRn.append(cell.value)
+                                        
+                                        iDataRnT.append(iDataRn)
+                                        iDataRn = []
+
+                    if rn_c1 != len(iSegments):
+                        
+                        st.error(f"""
+                            ##### ERROR for: {iTerm[0]}. In total {len(iSegments)} segmets entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
+                            See below an overview of the segments and their range that were succeeded:
+                        """, 
+                        icon="❌")
+                        st.json(cRngn, expanded=True)
+                        return
+
+                    for i in range(1, ws.max_row + 1):
+                        for j in range(1, ws.max_column + 1):
+                            if j == int(row_n_storage[0]):
+                                if iTerm[1] == ws.cell(i,j).value:
+                                    rv_c = rv_c + 1
+                                    if int(rv_c) in Skipper_s1:
+                                        pass
+
+                                    else:
+                                        rv_c1 = rv_c1 + 1
+                                        cRngv.append(f"{iTerm[1]} {ws.cell(i,j)}")
+                                        for column in ws.iter_cols(min_row=i,max_row=i, min_col=j + 1, max_col=j + mDay):
+                                            for cell in column:
+                                                iDataRv.append((cell.value))
+                                        
+                                        iDataRvT.append(iDataRv)
+                                        iDataRv = []
+
+                    if rv_c1 != len(iSegments):
+                        
+                        st.error(f"""
+                            ##### ERROR for: {iTerm[1]}. In total {len(iSegments)} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
+                            See below an overview of the segments and their range that were succeeded:
+                        """, 
+                        icon="❌")
+                        st.json(cRngv, expanded=True)
+                        return
+                        
+            a = 0
+            for x in range(len(iMonths)):
+                
+                for i in range(len(iSegments)):
+
+                    strFind = iSegments[i]
+
+                    for y in range(len(iSort)):
+
+                        strStored = iSort[y]
+
+                        #print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
+
+                        if strFind == strStored:
+                            
+                            if i == y:
+                                #print(f"-- Level & Name match: {strFind} = {i}")
+                                pass
+                            else:
+                                #print(f"- Name match: {strFind} : {i} - {y}")
+                                #print(f"- reordering...")
+                                
+                                arrTemp = iDataRnT[y + a]
+                                arrTempV = iDataRvT[y + a]
+
+                                iDataRnT[y + a] = iDataRnT[i + a]
+                                iDataRvT[y + a] = iDataRvT[i + a]
+
+                                iDataRnT[i + a] = arrTemp
+                                iDataRvT[i + a] = arrTempV
+
+                                temp = iSort[i]
+
+                                iSort[i] = iSegments[i]
+                                iSort[y] = temp
+                
+                if x == 0:
+                    a = len(iSort)
+                else:
+                    a = a + len(iSort)
+
+                iSort.clear()
+                if stro == 'No':
+                    for z in keywords: iSort.append(z)
+                elif stro == 'Yes':
+                    for z in iSort_t: iSort.append(z)
+
+            d =[]
+
+            for x in range(len(iDataRnT)):
+                d.append(iDataRnT[x])
+                d.append(iDataRvT[x])
+
+            df2 = pd.DataFrame(data=d)
+
+            df2 = df2.T
+            
+            wb = openpyxl.Workbook()
+            sheet = wb.active
+            sheet.title='sheet0'
+
+            y = 1
+            for x in range(len(all_columns)):
+                sheet.cell(row=1, column=y).value=all_columns[x]
                 y = y + 1
 
-            if s == len(iSegments):
-                x = 2
-                s = 1
-                if i <= len(iSegments):
-                    t = 2 + (len(iDataRnT[i]))
+            x = 2 # COLUMN
+            y = 2 # ROW
+            t = 2 # ROW
+            s = 1 # SEGMENTS
+
+            for i in range(len(iDataRnT)):
+
+                for z in range(len(iDataRnT[i])):
+
+                    sheet.cell(row=y, column=x).value=iDataRnT[i][z]
+                    if iDataSt == "ADR":
+                        sheet.cell(row=y, column=x+1).value=(iDataRnT[i][z] * iDataRvT[i][z])
+                    else:
+                        sheet.cell(row=y, column=x+1).value=iDataRvT[i][z]
+                    y = y + 1
+
+                if s == len(iSegments):
+                    x = 2
+                    s = 1
+                    if i <= len(iSegments):
+                        t = 2 + (len(iDataRnT[i]))
+                    else:
+                        t = t + (len(iDataRnT[i]))
                 else:
-                    t = t + (len(iDataRnT[i]))
-            else:
-                s = s + 1
-                x = x + 2
-                y = t 
+                    s = s + 1
+                    x = x + 2
+                    y = t 
 
-        datetime_object = datetime.strptime(eMonth, "%b")
-        month_number = datetime_object.month
+            datetime_object = datetime.strptime(eMonth, "%b")
+            month_number = datetime_object.month
 
-        datelist = pd.date_range(datetime(year, month_number, 1), periods=sheet.max_row - 1).to_pydatetime().tolist()
+            datelist = pd.date_range(datetime(year, month_number, 1), periods=sheet.max_row - 1).to_pydatetime().tolist()
+            
+            i = 2
+            for x in range(len(datelist)):
+                sheet.cell(row=i, column=1).value=datelist[x]
+                i = i + 1
+
+            for cell in sheet["A"]:
+                cell.number_format = "YYYY/MM/DD"
+            
+            wb.save('NameFile.xlsx')
+
+            df3 = pd.read_excel('NameFile.xlsx')
+
+            st.dataframe(df3)
         
-        i = 2
-        for x in range(len(datelist)):
-            sheet.cell(row=i, column=1).value=datelist[x]
-            i = i + 1
+        except Exception as e:
 
-        for cell in sheet["A"]:
-            cell.number_format = "YYYY/MM/DD"
-        
-        wb.save('NameFile.xlsx')
+            traceback.print_exc()
 
-        df3 = pd.read_excel('NameFile.xlsx')
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 
-        st.dataframe(df3)
+            credentials = run_credentials()
+
+            gc = gspread.service_account_from_dict(credentials)
+
+            sh = gc.open(st.secrets["private_gsheets_url_log"])
+            a=len(sh.sheet1.col_values(1))
+            print(a)
+
+            sh.sheet1.update_cell(a + 1, 1, f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} {datetime.utcnow()}')
+            st.error(f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} | UTC: {datetime.utcnow()}')
+            return
 
     st.success('Process ran!')
 
@@ -647,7 +677,7 @@ with st.container():
                             sorted_items1 = sort_items(df1.columns.to_list(), direction='vertical')
 
                         with right_column:
-                            st.markdown("### Map the segments so that they match the segments on the left!")
+                            st.markdown("### Map the segments so they exact match on the left!")
                             sorted_items2 = sort_items(keywords, direction='vertical')
 
                         st.write('## Select starting year of first sheet.')
