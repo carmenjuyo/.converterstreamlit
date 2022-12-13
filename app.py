@@ -528,7 +528,6 @@ def run_process():
 
             sh = gc.open(st.secrets["private_gsheets_url_log"])
             a=len(sh.sheet1.col_values(1))
-            print(a)
 
             sh.sheet1.update_cell(a + 1, 1, f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} {datetime.utcnow()}')
             st.error(f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} | UTC: {datetime.utcnow()}')
