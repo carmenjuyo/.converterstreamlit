@@ -126,13 +126,13 @@ def save_storage():
 
             st.write("""
                 # Here you can check your input for future use.
-                Save the generated key for later purposes.
+                Save the generated password for later purposes.
                 """)
 
             st.json(json_string, expanded=False)
 
         st.write(f'''
-            #### Here is your key: 
+            #### Here is your password: 
             {result_str}
             ##### Save it well.
             ''')
