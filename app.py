@@ -12,8 +12,25 @@ import random
 import string
 from PIL import Image
 
+# Explanation of script
+
+# This script is build with the help of Streamlit (https://streamlit.io/)
+
+# The script is set-up with 3 different functions and at the button of the script the page lay-out is defined.
+
+# In this script, the store_input() function is used to store the input of the clients in some form of data structure, such as a dictionary. 
+# The run_credentials() function is used to check the validity of the client's input, such as by verifying their credentials or checking for required fields. 
+# The run_process() function is used to run the entire process, such as by performing the converting process on the client's input.
+
+# At the bottom of the script, the page layout is defined using the st.container() and st.button() functions from Streamlit.
+# When the client clicks the button, the input is stored using the store_input() function, the credentials are checked using the run_credentials() function, 
+# and the process is run using the run_process() function. The results of running the process are then displayed on the page.
+
+# Overall, this script provides a step-by-step procedure for clients to complete in order to input their data, 
+# have their credentials verified, and see the results of running the process.
+
 # Set up page config
-st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_clockwise:", layout="wide")#, initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_clockwise:", layout="wide")
 
 hide_default_format = """
        <style>
@@ -444,6 +461,7 @@ def run_process():
         y = 2 # ROW
         t = 2 # ROW
         s = 1 # SEGMENTS
+        
         for i in range(len(iDataRnT)):
 
             for z in range(len(iDataRnT[i])):
@@ -513,7 +531,7 @@ with st.container():
         imagejuyo = Image.open('JUYO3413_Logo_Gris1.png')
         st.image(imagejuyo)
         
-
+# Here will start the step-by-step process for data input.
 with st.container():
 
     st.write("---")
@@ -530,7 +548,7 @@ with st.container():
             
             if uploaded_file_CLIENT.name[-5:] == '.xlsb':
                 print('xslb')
-                # //TODO Find a way to convert this
+                st.error('.XLSB file format (Excel Binary File Format) is not supported by python or its liberies. Please convert the file to an .XLSX file format.')
 
             st.markdown("### Select wanted sheets in chronological order for conversion.")
 
