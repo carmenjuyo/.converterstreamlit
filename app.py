@@ -31,7 +31,9 @@ from PIL import Image
 # have their credentials verified, and see the results of running the process.
 
 # Set up page config
-st.set_page_config(page_title="Forecast converter - JUYO", page_icon=":arrows_clockwise:", layout="wide")
+
+im = Image.open('images/JUYOcon.ico')
+st.set_page_config(page_title="Forecast converter - JUYO", page_icon=im, layout="wide")
 
 hide_default_format = """
        <style>
@@ -557,7 +559,7 @@ with st.container():
         )
     with r_column:
         st.write("")
-        imagejuyo = Image.open('JUYO3413_Logo_Gris1.png')
+        imagejuyo = Image.open('images/JUYO3413_Logo_Gris1.png')
         st.image(imagejuyo)
         
 # Here will start the step-by-step process for data input.
@@ -736,7 +738,7 @@ with st.container():
 
                         with st.expander('Click for more explantion'):
                             st.write(f'Here you can see with what me mean with row or column. E.g.:')
-                            image = Image.open('voorbeeld_excel.png')
+                            image = Image.open('images/voorbeeld_excel.png')
                             st.image(image)
                             st.write('''In this picture you can see that the terminology of roomnights and revenue is stored in column 'a'.
                                     So than you will choose *'Columns'* and enter 'a' in the inputbox. If the terminology is stored in a row, then you
@@ -759,7 +761,7 @@ with st.container():
 
                         with st.expander('Click for more explantion'):
                             st.write(f'You have just indicated the terminology (roomnights and {term}) is in {storage} {row_n}. It may happen that on that same {storage} the terminology (roomnights and {term}) of totals are included, but should not be included. E.g.:')
-                            image = Image.open('voorbeeld_excel.png')
+                            image = Image.open('images/voorbeeld_excel.png')
                             st.image(image)
                             st.write('''Here you can see that in column A, there are minor 2 segments. But the terminology Rms and REV are used 3 times.
                                     So if you want to skip the terminology, you have to click the check box and indicate on which places you want to skip the terminology.''')
@@ -841,6 +843,8 @@ with st.container():
                 iStepper_l = [i for i, s in enumerate(values_list) if 'iStepper' in s]
                 iDataSt_l = [i for i, s in enumerate(values_list) if 'iDataSt' in s]
                 iLoc_l = [i for i, s in enumerate(values_list) if 'iLoc' in s]
+
+                st.success(f'password: {values_list[0]} succesfull', icon='✅')
 
             except:
                 st.write('❌ No match found!')
