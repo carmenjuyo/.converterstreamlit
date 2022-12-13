@@ -562,7 +562,7 @@ with st.container():
 
         st.write("---")
 
-        st.write("## Enter passwprd:")
+        st.write("## Enter password:")
         stro = st.radio(
             label="-",
             options=("Yes", "No"),
