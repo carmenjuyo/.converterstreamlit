@@ -844,6 +844,10 @@ with st.container():
                 iDataSt_l = [i for i, s in enumerate(values_list) if 'iDataSt' in s]
                 iLoc_l = [i for i, s in enumerate(values_list) if 'iLoc' in s]
 
+                sh_log = gc.open(st.secrets["private_gsheets_url_log"])
+                a=len(sh_log.sheet1.col_values(1))
+                sh_log.sheet1.update_cell(a + 1, 1, f'Key={key_s} used at: {datetime.utcnow()}')
+
                 st.success(f'password: {values_list[0]} succesfull', icon='✅')
 
             except:
