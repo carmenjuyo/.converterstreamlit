@@ -44,6 +44,13 @@ hide_default_format = """
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
 
+st.experimental_get_query_params()
+
+if str(st.experimental_user.email) == st.secrets["user_email_lh"] or st.experimental_user == st.secrets["user_email_dev"]:
+    st.experimental_set_query_params(analytics=st.secrets["query_params_settings"]["setting_1"])
+else:
+    st.experimental_get_query_params()
+
 def run_credentials():
     credentials = {
             "type": st.secrets["gcp_service_account"]["type"],
@@ -709,7 +716,7 @@ with streamlit_analytics.track():
                             
                             st.write(f"""
                                 # Enter the terminology used in Excel file for roomnights and {term}:
-                                For example; roonnights = Rms, Rn, etc. Revenue = Rev, Rvu, etc.
+                                For example; roonnights = Rms, Rn, etc. Revenue = Rev, Rvu, etc. (press ENTER when filled in!)
                                 """)
 
                             terminologyR = st_tags(
