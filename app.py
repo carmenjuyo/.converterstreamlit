@@ -586,7 +586,7 @@ with st.container():
             tabs = pd.ExcelFile(uploaded_file_CLIENT).sheet_names
 
             cols = st.multiselect('Select sheets in the **chronological** order of the months:', tabs)
-
+            st.write('press enter after each sheet.')
             st.write('You selected:', len(cols)) 
 
     with right_column:
