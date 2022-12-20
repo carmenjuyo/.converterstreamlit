@@ -44,6 +44,8 @@ hide_default_format = """
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
 
+st.write(st.experimental_user.email)
+
 st.experimental_get_query_params()
 
 if str(st.experimental_user.email) == st.secrets["user_email_lh"] or st.experimental_user == st.secrets["user_email_dev"]:
