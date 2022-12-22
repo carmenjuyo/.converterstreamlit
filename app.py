@@ -411,7 +411,7 @@ def run_process():
                         icon="❌")
                         st.json(cRngv, expanded=True)
                         return
-                        
+           
             a = 0
             for x in range(len(iMonths)):
                 
@@ -423,16 +423,16 @@ def run_process():
 
                         strStored = iSort[y]
 
-                        #print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
+                        print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
 
                         if strFind == strStored:
                             
                             if i == y:
-                                #print(f"-- Level & Name match: {strFind} = {i}")
-                                pass
+                                print(f"-- Level & Name match: {strFind} = {i}")
+                                #pass
                             else:
-                                #print(f"- Name match: {strFind} : {i} - {y}")
-                                #print(f"- reordering...")
+                                print(f"- Name match: {strFind} : {i} - {y}")
+                                print(f"- reordering...")
                                 
                                 arrTemp = iDataRnT[y + a]
                                 arrTempV = iDataRvT[y + a]
@@ -866,7 +866,9 @@ with streamlit_analytics.track():
 
                 year = st.select_slider(
                     label="# .",
-                    options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
+                    options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year,
+                    label_visibility='collapsed'
+                    )
 
                 if st.button("Start converting process.", key="run1"): run_process()
 
