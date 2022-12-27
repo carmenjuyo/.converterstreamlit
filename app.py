@@ -428,11 +428,11 @@ def run_process():
                         if strFind == strStored:
                             
                             if i == y:
-                                print(f"-- Level & Name match: {strFind} = {i}")
-                                #pass
+                                #print(f"-- Level & Name match: {strFind} = {i}")
+                                pass
                             else:
-                                print(f"- Name match: {strFind} : {i} - {y}")
-                                print(f"- reordering...")
+                                #print(f"- Name match: {strFind} : {i} - {y}")
+                                #print(f"- reordering...")
                                 
                                 arrTemp = iDataRnT[y + a]
                                 arrTempV = iDataRvT[y + a]
@@ -855,7 +855,7 @@ with streamlit_analytics.track():
 
                     sh_log = gc.open(st.secrets["private_gsheets_url_log"])
                     a=len(sh_log.sheet1.col_values(1))
-                    sh_log.sheet1.update_cell(a + 1, 1, f'Key={key_s} used at: {datetime.utcnow()}')
+                    sh_log.sheet1.update_cell(a + 1, 1, f'Key= {key_s} used at: {datetime.utcnow()}')
 
                     st.success(f'password: {values_list[0]} succesfull', icon='✅')
 
