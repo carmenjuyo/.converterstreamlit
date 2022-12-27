@@ -411,7 +411,7 @@ def run_process():
                         icon="❌")
                         st.json(cRngv, expanded=True)
                         return
-                        
+           
             a = 0
             for x in range(len(iMonths)):
                 
@@ -423,7 +423,7 @@ def run_process():
 
                         strStored = iSort[y]
 
-                        #print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
+                        print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
 
                         if strFind == strStored:
                             
@@ -620,6 +620,7 @@ with streamlit_analytics.track():
 
             st.write("---")
 
+            # //TODO add explanation for why password and what it will return.
             st.write("## Enter password:")
             stro = st.radio(
                 label="-",
@@ -715,12 +716,12 @@ with streamlit_analytics.track():
                                 print(iData_choice)
                             
                             st.write(f"""
-                                # Enter the terminology used in Excel file for roomnights and {term}:
+                                # Enter the terminology used in Excel file for room nights and {term}:
                                 For example; roonnights = Rms, Rn, etc. Revenue = Rev, Rvu, etc. (press ENTER when filled in!)
                                 """)
 
                             terminologyR = st_tags(
-                                label='Enter the terminology of **roomnights:**',
+                                label='Enter the terminology of **room nights:**',
                                 text='Press enter to add more',
                                 suggestions=['rn', 'RN', 'Rn', 
                                             'Rev', 'REV', 'rev', 
@@ -741,15 +742,16 @@ with streamlit_analytics.track():
 
                             terminology = terminologyR + terminologyR1
 
+                            # //TODO change it that it says headers or terminology.
                             storage = st.radio(
-                                label=f'Are the roomnights and {term} stored in a row or in a column?',
+                                label=f'Are the room nights and {term} stored in a row or in a column?',
                                 options=('Rows', 'Columns'))
 
                             with st.expander('Click for more explantion'):
                                 st.write(f'Here you can see with what me mean with row or column. E.g.:')
                                 image = Image.open('images/voorbeeld_excel.png')
                                 st.image(image)
-                                st.write('''In this picture you can see that the terminology of roomnights and revenue is stored in column 'a'.
+                                st.write('''In this picture you can see that the terminology of room nights and revenue is stored in column 'a'.
                                         So than you will choose *'Columns'* and enter 'a' in the inputbox. If the terminology is stored in a row, then you
                                         will choose 'Rows' and press the row wanted, e.g.; '6'.
                                 ''')
@@ -855,7 +857,7 @@ with streamlit_analytics.track():
 
                     sh_log = gc.open(st.secrets["private_gsheets_url_log"])
                     a=len(sh_log.sheet1.col_values(1))
-                    sh_log.sheet1.update_cell(a + 1, 1, f'Key={key_s} used at: {datetime.utcnow()}')
+                    sh_log.sheet1.update_cell(a + 1, 1, f'Key= {key_s} used at: {datetime.utcnow()}')
 
                     st.success(f'password: {values_list[0]} succesfull', icon='✅')
 
@@ -866,7 +868,9 @@ with streamlit_analytics.track():
 
                 year = st.select_slider(
                     label="# .",
-                    options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year)
+                    options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year,
+                    label_visibility='collapsed'
+                    )
 
                 if st.button("Start converting process.", key="run1"): run_process()
 
