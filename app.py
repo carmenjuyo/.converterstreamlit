@@ -616,7 +616,7 @@ with streamlit_analytics.track():
 
                 st.write(shape[1], ' segments detected in Juyo file')
             
-        if uploaded_file_JUYO:
+        if uploaded_file_JUYO and uploaded_file_CLIENT:
 
             st.write("---")
 
@@ -757,12 +757,12 @@ with streamlit_analytics.track():
                                 ''')
                         
                             if storage == 'Rows':
-                                row_n = st.text_input(f"in which row can the roomnigts and {term} be found?")
+                                row_n = st.text_input(f"in which row can the terminology of room nigts and {term} be found?")
                                 if row_n:
                                     st.write(f'The terminology can ben found in row {row_n}')
                             
                             elif storage == 'Columns':
-                                row_n = st.text_input(f"In which column can the roomnigts and {term} be found? (use lowercase letters)")
+                                row_n = st.text_input(f"In which column can the terminology of room nigts and {term} be found? (use lowercase letters)")
                                 row_n = ord(row_n) - 96
                                 if row_n:
                                     st.write(f'The terminology can be found in column {row_n}')
