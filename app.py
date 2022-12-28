@@ -285,6 +285,7 @@ def run_process():
 
                 print(f'Current month: {tMonth}')
 
+                # //FIXME Implement a way to take leap year into considiration
                 if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
                 elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
                 elif tMonth == 'Feb': mDay = 28
@@ -619,7 +620,8 @@ with streamlit_analytics.track():
                 label="-",
                 options=("Yes", "No"),
                 horizontal=True,
-                index=0
+                index=0,
+                label_visibility='collapsed'
                 )
 
             if stro == 'No':
@@ -706,7 +708,6 @@ with streamlit_analytics.track():
                             else: 
                                 term = 'ADR'
                                 iData_choice = "ADR"
-                                print(iData_choice)
                             
                             st.write(f"""
                                 # Enter the terminology used in Excel file for room nights and {term}:
@@ -740,7 +741,7 @@ with streamlit_analytics.track():
                                 options=('Rows', 'Columns'))
 
                             with st.expander('Click for more explantion'):
-                                st.write(f'Here you can see with what me mean with row or column. E.g.:')
+                                st.write(f'Here you can see an example why we ask for the row or column. E.g.:')
                                 image = Image.open('images/voorbeeld_excel.png')
                                 st.image(image)
                                 st.write('''In this picture you can see that the terminology of room nights and revenue is stored in column 'a'.
@@ -754,7 +755,7 @@ with streamlit_analytics.track():
                                     st.write(f'The terminology can ben found in row {row_n}')
                             
                             elif storage == 'Columns':
-                                row_n = st.text_input(f"In which column can the terminology of room nigts and {term} be found? (use lowercase letters)")
+                                row_n = st.text_input(f"In which column can the terminology of room nigts and {term} be found?").lower()
                                 row_n = ord(row_n) - 96
                                 if row_n:
                                     st.write(f'The terminology can be found in column {row_n}')
@@ -813,7 +814,6 @@ with streamlit_analytics.track():
 
                             if st.button("Start converting process.", key="run4"):                        
                                 run_process()
-
 
                 except Exception:
                     traceback.print_exc()
