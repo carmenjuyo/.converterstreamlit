@@ -423,7 +423,7 @@ def run_process():
 
                         strStored = iSort[y]
 
-                        print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
+                        #print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
 
                         if strFind == strStored:
                             
@@ -621,7 +621,8 @@ with streamlit_analytics.track():
             st.write("---")
 
             # //TODO add explanation for why password and what it will return.
-            st.write("## Enter password:")
+            st.write("## Enter password to retreive previous data stored:")
+            st.write("When the password is entered, it will retreive the data stored, so that you won't have to enter all the input")
             stro = st.radio(
                 label="-",
                 options=("Yes", "No"),
@@ -742,9 +743,8 @@ with streamlit_analytics.track():
 
                             terminology = terminologyR + terminologyR1
 
-                            # //TODO change it that it says headers or terminology.
                             storage = st.radio(
-                                label=f'Are the room nights and {term} stored in a row or in a column?',
+                                label=f'Are the headers of the terminology room nights and {term} stored in a row or in a column?',
                                 options=('Rows', 'Columns'))
 
                             with st.expander('Click for more explantion'):
@@ -762,10 +762,10 @@ with streamlit_analytics.track():
                                     st.write(f'The terminology can ben found in row {row_n}')
                             
                             elif storage == 'Columns':
-                                row_n = st.text_input(f"in which column can the roomnigts and {term} be found?")
+                                row_n = st.text_input(f"In which column can the roomnigts and {term} be found? (use lowercase letters)")
                                 row_n = ord(row_n) - 96
                                 if row_n:
-                                    st.write(f'The terminology can ben found in column {row_n}')
+                                    st.write(f'The terminology can be found in column {row_n}')
                             
                             st.write('### Skip terminology on certain places?')
                             skip_term = st.checkbox('Want to skip terminology on certain places?')
@@ -841,25 +841,28 @@ with streamlit_analytics.track():
                     traceback.print_exc()
 
                 try:
-                    cell = sh.sheet1.findall(key_s)
-                    
-                    loc = str(cell[0])
-                    
-                    values_list = sh.sheet1.col_values(loc[9:10])
+                    if key_s == "":
+                        pass
+                    else:
+                        cell = sh.sheet1.findall(key_s)
+                        
+                        loc = str(cell[0])
+                        
+                        values_list = sh.sheet1.col_values(loc[9:10])
+                        
+                        iSegments_l = [i for i, s in enumerate(values_list) if 'iSegments' in s]
+                        iTerm_l = [i for i, s in enumerate(values_list) if 'iTerm' in s]
+                        iSort_l = [i for i, s in enumerate(values_list) if 'iSort' in s]
+                        iSkipper_l = [i for i, s in enumerate(values_list) if 'iSkipper' in s]
+                        iStepper_l = [i for i, s in enumerate(values_list) if 'iStepper' in s]
+                        iDataSt_l = [i for i, s in enumerate(values_list) if 'iDataSt' in s]
+                        iLoc_l = [i for i, s in enumerate(values_list) if 'iLoc' in s]
 
-                    iSegments_l = [i for i, s in enumerate(values_list) if 'iSegments' in s]
-                    iTerm_l = [i for i, s in enumerate(values_list) if 'iTerm' in s]
-                    iSort_l = [i for i, s in enumerate(values_list) if 'iSort' in s]
-                    iSkipper_l = [i for i, s in enumerate(values_list) if 'iSkipper' in s]
-                    iStepper_l = [i for i, s in enumerate(values_list) if 'iStepper' in s]
-                    iDataSt_l = [i for i, s in enumerate(values_list) if 'iDataSt' in s]
-                    iLoc_l = [i for i, s in enumerate(values_list) if 'iLoc' in s]
+                        sh_log = gc.open(st.secrets["private_gsheets_url_log"])
+                        a=len(sh_log.sheet1.col_values(1))
+                        sh_log.sheet1.update_cell(a + 1, 1, f'Key= {key_s} used at: {datetime.utcnow()}')
 
-                    sh_log = gc.open(st.secrets["private_gsheets_url_log"])
-                    a=len(sh_log.sheet1.col_values(1))
-                    sh_log.sheet1.update_cell(a + 1, 1, f'Key= {key_s} used at: {datetime.utcnow()}')
-
-                    st.success(f'password: {values_list[0]} succesfull', icon='✅')
+                        st.success(f'password: {values_list[0]} succesfull', icon='✅')
 
                 except:
                     st.write('❌ No match found!')
