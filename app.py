@@ -423,7 +423,7 @@ def run_process():
 
                         strStored = iSort[y]
 
-                        #print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
+                        print(f"L: {(iSegments[i])} | R: {(iSort[y])}")
 
                         if strFind == strStored:
                             
@@ -860,7 +860,7 @@ with streamlit_analytics.track():
 
                         sh_log = gc.open(st.secrets["private_gsheets_url_log"])
                         a=len(sh_log.sheet1.col_values(1))
-                        sh_log.sheet1.update_cell(a + 1, 1, f'Key= {key_s} used at: {datetime.utcnow()}')
+                        sh_log.sheet1.update_cell(a + 1, 1, f'Key={key_s} used at: {datetime.utcnow()}')
 
                         st.success(f'password: {values_list[0]} succesfull', icon='✅')
 
