@@ -44,13 +44,6 @@ hide_default_format = """
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
 
-st.experimental_get_query_params()
-
-if str(st.experimental_user.email) == st.secrets["user_email_lh"] or st.experimental_user == st.secrets["user_email_dev"]:
-    st.experimental_set_query_params(analytics=st.secrets["query_params_settings"]["setting_1"])
-else:
-    st.experimental_get_query_params()
-
 def run_credentials():
     credentials = {
             "type": st.secrets["gcp_service_account"]["type"],
@@ -620,7 +613,6 @@ with streamlit_analytics.track():
 
             st.write("---")
 
-            # //TODO add explanation for why password and what it will return.
             st.write("## Enter password to retreive previous data stored:")
             st.write("When the password is entered, it will retreive the data stored, so that you won't have to enter all the input")
             stro = st.radio(
