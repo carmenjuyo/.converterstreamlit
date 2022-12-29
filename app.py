@@ -330,7 +330,7 @@ def run_process():
                                         
                                     else:
                                         rv_c1 = rv_c1 + 1
-                                        cRngv.append(f"{iTerm[0]} {ws.cell(i,j)}")
+                                        cRngv.append(f"{iTerm[1]} {ws.cell(i,j)}")
                                         for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                             for cell in row:
                                                 iDataRv.append(round(cell.value,2))
