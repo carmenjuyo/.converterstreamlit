@@ -44,13 +44,6 @@ hide_default_format = """
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
 
-st.experimental_get_query_params()
-
-if str(st.experimental_user.email) == st.secrets["user_email_lh"] or st.experimental_user == st.secrets["user_email_dev"]:
-    st.experimental_set_query_params(analytics=st.secrets["query_params_settings"]["setting_1"])
-else:
-    st.experimental_get_query_params()
-
 def run_credentials():
     credentials = {
             "type": st.secrets["gcp_service_account"]["type"],
@@ -292,6 +285,7 @@ def run_process():
 
                 print(f'Current month: {tMonth}')
 
+                # //FIXME Implement a way to take leap year into considiration
                 if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
                 elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
                 elif tMonth == 'Feb': mDay = 28
@@ -336,7 +330,7 @@ def run_process():
                                         
                                     else:
                                         rv_c1 = rv_c1 + 1
-                                        cRngv.append(f"{iTerm[0]} {ws.cell(i,j)}")
+                                        cRngv.append(f"{iTerm[1]} {ws.cell(i,j)}")
                                         for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                             for cell in row:
                                                 iDataRv.append(round(cell.value,2))
@@ -620,14 +614,14 @@ with streamlit_analytics.track():
 
             st.write("---")
 
-            # //TODO add explanation for why password and what it will return.
             st.write("## Enter password to retreive previous data stored:")
             st.write("When the password is entered, it will retreive the data stored, so that you won't have to enter all the input")
             stro = st.radio(
                 label="-",
                 options=("Yes", "No"),
                 horizontal=True,
-                index=0
+                index=0,
+                label_visibility='collapsed'
                 )
 
             if stro == 'No':
@@ -714,7 +708,6 @@ with streamlit_analytics.track():
                             else: 
                                 term = 'ADR'
                                 iData_choice = "ADR"
-                                print(iData_choice)
                             
                             st.write(f"""
                                 # Enter the terminology used in Excel file for room nights and {term}:
@@ -748,7 +741,7 @@ with streamlit_analytics.track():
                                 options=('Rows', 'Columns'))
 
                             with st.expander('Click for more explantion'):
-                                st.write(f'Here you can see with what me mean with row or column. E.g.:')
+                                st.write(f'Here you can see an example why we ask for the row or column. E.g.:')
                                 image = Image.open('images/voorbeeld_excel.png')
                                 st.image(image)
                                 st.write('''In this picture you can see that the terminology of room nights and revenue is stored in column 'a'.
@@ -762,7 +755,7 @@ with streamlit_analytics.track():
                                     st.write(f'The terminology can ben found in row {row_n}')
                             
                             elif storage == 'Columns':
-                                row_n = st.text_input(f"In which column can the terminology of room nigts and {term} be found? (use lowercase letters)")
+                                row_n = st.text_input(f"In which column can the terminology of room nigts and {term} be found?").lower()
                                 row_n = ord(row_n) - 96
                                 if row_n:
                                     st.write(f'The terminology can be found in column {row_n}')
@@ -821,7 +814,6 @@ with streamlit_analytics.track():
 
                             if st.button("Start converting process.", key="run4"):                        
                                 run_process()
-
 
                 except Exception:
                     traceback.print_exc()
