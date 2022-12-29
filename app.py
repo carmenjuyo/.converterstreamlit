@@ -434,7 +434,7 @@ def run_process(result_list):
 # Header of the page
 with st.container():
 
-    l_column, m_column, r_column = st.columns([1,5,1])
+    l_column, m_column, r_column = st.columns([1,6,1])
 
     with m_column:
         st.markdown("<h1 style='text-align: center; color: white;'>♾️Forecast / budget converter</h1>", unsafe_allow_html=True)
