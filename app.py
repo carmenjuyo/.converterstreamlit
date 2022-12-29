@@ -565,7 +565,6 @@ with st.container():
                 st.warning('You are 1 segment short! You can continue with 1 segment short, but the last segments in Juyo will be kept empty')
             elif len(keywords) < shape[1]:
                 st.warning(f'You are {shape[1] - len(keywords)} segments short! Please add more segments to match the Juyo segments')
-        
 
             left_column, right_column = st.columns(2)
 
