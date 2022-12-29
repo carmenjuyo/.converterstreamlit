@@ -562,7 +562,7 @@ with st.container():
             st.markdown(f"<h3 style='text-align: center; color: white;'>{len(keywords)} segments of {shape[1]} entered</h3>", unsafe_allow_html=True)
 
             if len(keywords) == shape[1] - 1:
-                st.warning('You are 1 segment short! You can continue with 1 segment short, as the last segments in Juyo will be kept empty')
+                st.warning('You are 1 segment short! You can continue with 1 segment short, but the last segments in Juyo will be kept empty')
             elif len(keywords) < shape[1]:
                 st.warning(f'You are {shape[1] - len(keywords)} segments short! Please add more segments to match the Juyo segments')
         
