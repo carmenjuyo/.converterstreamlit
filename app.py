@@ -17,6 +17,7 @@ from PIL import Image
 from modules.data_process import Gscon
 from modules.data_ret import Gsret
 
+
 st.set_page_config(page_title="Forecast converter - JUYO", page_icon=Image.open('images/JUYOcon.ico'), layout="wide")
 
 hide_default_format = """
@@ -516,9 +517,11 @@ with st.container():
                 result_list = Gsret.retreive_data(key_s)
                 st.session_state.dict = result_list
             
+            # //BUG displays 2 times success, raises because of imported module
             if not bool(st.session_state.dict) == False:
-                st.success(f'password: {key_s} succesfull', icon='✅')
-                st.json(st.session_state.dict, expanded=False)
+                #st.success(f'password: {key_s} succesfull', icon='✅')
+                #st.json(st.session_state.dict, expanded=False)
+                pass
             else: pass
 
             if bool(st.session_state.dict) == False:

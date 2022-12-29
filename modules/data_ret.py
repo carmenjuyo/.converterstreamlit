@@ -46,7 +46,7 @@ class Gsret:
                 sh_log.sheet1.update_cell(a + 1, 1, f'Key={key_s} used at: {datetime.utcnow()}')
 
                 #st.success(f'password: {values_list[0]} succesfull', icon='✅')
-            
+
             except:
                 st.write('❌ No match found!, please try again.')
                 return
