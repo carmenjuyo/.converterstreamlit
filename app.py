@@ -515,24 +515,23 @@ with st.container():
                 result_list = Gsret.retreive_data(key_s)
                 st.session_state.dict = result_list
                 
-                if result_list == None:
-                    disabled = 1
-                else:
-                    disabled = 0
+            if st.session_state.dict == None:
+                disabled = 1
+            else:
+                disabled = 0
 
-                st.write('## Select starting year of first sheet.')
+            st.write('## Select starting year of first sheet.')
 
-                st.session_state.year = st.select_slider(
-                    label="# .",
-                    options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year,
-                    label_visibility='collapsed',
-                    disabled=disabled
-                    )
+            st.session_state.year = st.select_slider(
+                label="# .",
+                options=range(datetime.today().year - 2, datetime.today().year + 3),value=datetime.today().year,
+                label_visibility='collapsed',
+                disabled=disabled
+                )
 
             if st.button("Start converting process.", key="run1", disabled=disabled): 
                 run_process(st.session_state.dict)
         
-
         elif use_password == 'Enter new input':
 
             st.write("---")
