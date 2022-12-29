@@ -3,7 +3,6 @@ from datetime import datetime
 import streamlit as st
 import gspread
 
-
 from modules.data_process import Gscon
 
 class Gsret:
@@ -46,7 +45,7 @@ class Gsret:
                 a=len(sh_log.sheet1.col_values(1))
                 sh_log.sheet1.update_cell(a + 1, 1, f'Key={key_s} used at: {datetime.utcnow()}')
 
-                st.success(f'password: {values_list[0]} succesfull', icon='✅')
+                #st.success(f'password: {values_list[0]} succesfull', icon='✅')
             
             except:
                 st.write('❌ No match found!, please try again.')
@@ -87,6 +86,6 @@ class Gsret:
                 'iLoc': [storage[0], iLoc[1]]
             }
 
-            st.json(result_list, expanded=False)
+            #st.json(result_list, expanded=False)
 
             return(result_list)

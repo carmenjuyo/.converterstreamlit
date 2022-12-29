@@ -125,7 +125,7 @@ def run_process(result_list):
         iSort_t = result_list['iSort']
 
         # If no terminology is found, the script will end and show a warning
-        if len(result_list['iTerm']) == 0:
+        if len(result_list['iTerm'])== 0:
             st.error('Err1: No terminology filled in. Press "enter" after typing the terminology!', icon='❌')
             return
 
@@ -135,6 +135,7 @@ def run_process(result_list):
         # Here the process of converting will start
         # With the use of Try, Except error messages will pop-up in case of mistakes.
         try:
+            
             for x in range(len(iMonths)):
                 
                 ws = wb[(iMonths[x])]
@@ -514,8 +515,13 @@ with st.container():
             if form.form_submit_button("Submit"):
                 result_list = Gsret.retreive_data(key_s)
                 st.session_state.dict = result_list
-                
-            if st.session_state.dict == None:
+            
+            if not bool(st.session_state.dict) == False:
+                st.success(f'password: {key_s} succesfull', icon='✅')
+                st.json(st.session_state.dict, expanded=False)
+            else: pass
+
+            if bool(st.session_state.dict) == False:
                 disabled = 1
             else:
                 disabled = 0
