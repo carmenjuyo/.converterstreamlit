@@ -517,11 +517,10 @@ with st.container():
                 result_list = Gsret.retreive_data(key_s)
                 st.session_state.dict = result_list
             
-            # //BUG displays 2 times success, raises because of imported module
+            # //BUG displays 2 times success, raises because of imported module (29/12/2022 17:16 can be fixed after merge)
             if not bool(st.session_state.dict) == False:
-                #st.success(f'password: {key_s} succesfull', icon='✅')
-                #st.json(st.session_state.dict, expanded=False)
-                pass
+                st.success(f'password: {key_s} succesfull', icon='✅')
+                st.json(st.session_state.dict, expanded=False)    
             else: pass
 
             if bool(st.session_state.dict) == False:
