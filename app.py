@@ -99,15 +99,11 @@ def run_process(result_list):
         cRngn = []
         cRngv = []
 
-        iSort_t = [] # Temp sorting list
-        iSort_l = [] # For each loop sorting
-
         iDataRn = []
         iDataRnT = []
         iDataRv = []
         iDataRvT = []
 
-        iMonths = []
         iDays = []
         sMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
 
@@ -115,7 +111,9 @@ def run_process(result_list):
         result_list['iStepper'] = [round(float(i)) for i in result_list['iStepper']]
         
         # Adding the selected sheets into a list, in that list, the months will be extracted of the sheets name.
-        for x in cols: iMonths.append(x)
+
+        iMonths = [x for x in cols]
+
         for x in iMonths:
             str2Match = x
 
@@ -124,11 +122,9 @@ def run_process(result_list):
             iDays.append(highest)
 
         # Set a list of the segments for later use in the sorting algo.
+        iSort_t = [x for x in result_list['iSort']] #Temp sorting list
+        iSort_l = [x for x in result_list['iSort']] # For each loop sorting
 
-        for x in result_list['iSort']:
-            iSort_t.append(x)
-            iSort_l.append(x)
-        
         # If no terminology is found, the script will end and show a warning
         if len(result_list['iTerm']) == 0:
             st.error('Err1: No terminology filled in. Press "enter" after typing the terminology!', icon='❌')
