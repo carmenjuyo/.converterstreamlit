@@ -486,7 +486,7 @@ with st.container():
 
     with right_column:
         
-        st.markdown("<h2 style='text-align: center; color: white;'>Format file JUYO</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: white;'>Forecast file Juyo</h2>", unsafe_allow_html=True)
         
         uploaded_file_JUYO = st.file_uploader("Upload JUYO file", type=".xlsx")
 
