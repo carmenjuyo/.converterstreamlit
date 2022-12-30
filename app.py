@@ -652,13 +652,13 @@ with st.container():
 
             if storage == 'Rows':
                 
-                st.write(f''' ### in which row can the terminology of room nigts and {term} be found?"''')
+                st.write(f''' ### In which row can the terminology of room nigts and {term} be found?"''')
 
                 row_n = st.text_input(f"x", label_visibility='collapsed')
             
             elif storage == 'Columns':
 
-                st.write(f''' ### in which row can the terminology of room nigts and {term} be found?"''')
+                st.write(f''' ### In which row can the terminology of room nigts and {term} be found?"''')
 
                 row_n = st.text_input(f"x", label_visibility='collapsed').lower()
                 try: row_n = ord(row_n) - 96
@@ -737,15 +737,24 @@ with st.container():
             if st.checkbox('Data is correct'):
                 if len(keywords) < shape[1] - 1:
                     st.warning(f'''{len(keywords)} segments entered, but {shape[1]} segments active in Juyo.
-                    Please match the number of segments with Juyo or be 1 segment short.''')
+                    Please match the number of segments with Juyo or be 1 segment short.''', icon='❌')
+
+                    disabled = 1
+
+                elif not result_list['iTerm'] or not result_list['iLoc'][1]:
+                    st.warning('''Terminology or the location of the terminology in a row or column is not filled in.
+                    Please check the input fields: *"Enter the terminology used in Excel file for room nights and revenue:"*
+                    and / or *"Are the headers of the terminology room nights and revenue stored in a row or in a column?"*.''', icon='❌')
+                    
                     disabled = 1
 
                 else:
-                    disabled = 0
                     st.info('If it is the first time, it is wise before storing the data, to first run the process to check if the data output is correct.', icon='ℹ️')
+
+                    disabled = 0
 
             if st.button('Store the data for next time', key="store", disabled=disabled): 
                 save_storage()
 
-            if st.button("Start converting process", key="run4", disabled=disabled):                        
+            if st.button("Start the Converting Process", key="run4", disabled=disabled):                        
                 run_process(result_list)
