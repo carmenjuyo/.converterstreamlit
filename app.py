@@ -1,19 +1,24 @@
-import sys, os
-from datetime import datetime
-import json
+# --- Load Streamlit modules ---
 from streamlit_sortables import sort_items
 from streamlit_tags import st_tags
-from fuzzywuzzy import process
-import pandas as pd
 import streamlit as st
-import openpyxl
-import traceback
-import gspread
+
+# --- Load internal modules ---
+from datetime import datetime
+import sys, os
 import random
 import string
-from PIL import Image
+import json
 
-#Import data connection modules
+# --- Load external modules ---
+from fuzzywuzzy import process
+from PIL import Image
+import pandas as pd
+import traceback
+import openpyxl
+import gspread
+
+# --- Import data connection modules ---
 from modules.data_process import Gscon
 from modules.data_ret import Gsret
 
