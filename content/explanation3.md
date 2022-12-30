@@ -1,4 +1,4 @@
-Here you can see that in column A, there are minor 2 segments. But the terminology Rms and REV are used 3 times.
+Here you can see that in column A, there are minor 2 segments. But the terminology Rms and REV is used 3 times.
 So if you want to skip the terminology, you have to click the check box and indicate on which places you want to skip the terminology.
 
 If you want to skip an item, you must write down the index of that item in the correct order that it needs to be skipped. 
