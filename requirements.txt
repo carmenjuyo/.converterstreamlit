@@ -7,4 +7,3 @@ streamlit_tags
 datetime
 xlsxwriter
 gspread
-streamlit_analytics
