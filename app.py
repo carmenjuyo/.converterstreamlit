@@ -17,7 +17,6 @@ from PIL import Image
 from modules.data_process import Gscon
 from modules.data_ret import Gsret
 
-
 st.set_page_config(page_title="Forecast Converter - JUYO", page_icon=Image.open('images/JUYOcon.ico'), layout="wide")
 
 hide_default_format = """
