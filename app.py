@@ -1,5 +1,6 @@
 import sys, os
 from datetime import datetime
+import calendar
 import json
 from streamlit_sortables import sort_items
 from streamlit_tags import st_tags
@@ -18,7 +19,7 @@ from modules.data_process import Gscon
 from modules.data_ret import Gsret
 
 
-st.set_page_config(page_title="Forecast converter - JUYO", page_icon=Image.open('images/JUYOcon.ico'), layout="wide")
+st.set_page_config(page_title="Forecast Converter - JUYO", page_icon=Image.open('images/JUYOcon.ico'), layout="wide")
 
 hide_default_format = """
        <style>
@@ -31,6 +32,7 @@ st.markdown(hide_default_format, unsafe_allow_html=True)
 def save_storage():
     
     with st.sidebar:
+
         with st.spinner('Storing data...'):
             
             gs_storage = []
@@ -93,13 +95,14 @@ def run_process(result_list):
 
         print(f"starting process...")
 
-        # Declaring variables
+        # --- Declaring variables ---
         rn_c = 0
         rv_c = 0
         cRngn = []
         cRngv = []
 
-        iSort_t = []
+        iSort_t = [] # Temp sorting list
+        iSort_l = [] # For each loop sorting
 
         iDataRn = []
         iDataRnT = []
@@ -123,10 +126,13 @@ def run_process(result_list):
             iDays.append(highest)
 
         # Set a list of the segments for later use in the sorting algo.
-        iSort_t = result_list['iSort']
 
+        for x in result_list['iSort']:
+            iSort_t.append(x)
+            iSort_l.append(x)
+        
         # If no terminology is found, the script will end and show a warning
-        if len(result_list['iTerm'])== 0:
+        if len(result_list['iTerm']) == 0:
             st.error('Err1: No terminology filled in. Press "enter" after typing the terminology!', icon='❌')
             return
 
@@ -157,9 +163,11 @@ def run_process(result_list):
 
                 print(f'Current month: {tMonth}')
 
-                # //FIXME Implement a way to take leap year into considiration
+                leap_year = [int(2024), int(2028), int(2032)]
+
                 if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
                 elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
+                elif tMonth == 'Feb' and st.session_state.year in leap_year: mDay = 29
                 elif tMonth == 'Feb': mDay = 28
                 else: mDay = 30
 
@@ -231,7 +239,7 @@ def run_process(result_list):
                             if j == int(result_list['iLoc'][1]):
                                 if result_list['iTerm'][0] == ws.cell(i,j).value:
                                     rn_c = rn_c + 1
-                                    if int(rn_c) in result_list['iSkipper']:
+                                    if int(rn_c) in set(result_list['iSkipper']):
                                         pass
                                         
                                     else:
@@ -259,7 +267,7 @@ def run_process(result_list):
                             if j == int(result_list['iLoc'][1]):
                                 if result_list['iTerm'][1] == ws.cell(i,j).value:
                                     rv_c = rv_c + 1
-                                    if int(rv_c) in result_list['iStepper']:
+                                    if int(rv_c) in set(result_list['iStepper']):
                                         pass
 
                                     else:
@@ -292,11 +300,11 @@ def run_process(result_list):
 
                     strFind = result_list['iSegments:'][i]
 
-                    for y in range(len(result_list['iSort'])):
+                    for y in range(len(iSort_l)):
 
-                        strStored = result_list['iSort'][y]
+                        strStored = iSort_l[y]
 
-                        #print(f"L: {i} - {(result_list['iSegments:'][i])} | R: {y} - {(result_list['iSort'][y])}")
+                        #print(f"L: {i} - {(result_list['iSegments:'][i])} | R: {y} - {(iSort_l[y])}")
 
                         if strFind == strStored:
                             
@@ -316,18 +324,18 @@ def run_process(result_list):
                                 iDataRnT[i + a] = arrTemp
                                 iDataRvT[i + a] = arrTempV
 
-                                temp = result_list['iSort'][i]
+                                temp = iSort_l[i]
 
-                                result_list['iSort'][i] = result_list['iSegments:'][i]
-                                result_list['iSort'][y] = temp
+                                iSort_l[i] = result_list['iSegments:'][i]
+                                iSort_l[y] = temp
                 
                 if x == 0:
-                    a = len(result_list['iSort'])
+                    a = len(iSort_l)
                 else:
-                    a = a + len(result_list['iSort'])
+                    a = a + len(iSort_l)
 
-                result_list['iSort'].clear()
-                result_list['iSort'] = iSort_t
+                iSort_l.clear()
+                for z in iSort_t: iSort_l.append(z)
 
             # Here will be the two 2d array merged together for later purposes
             # The array will then be put into an dataframe so it can be transposed
@@ -450,6 +458,7 @@ with st.container():
 
     disabled = 1
 
+    # --- Initialising SessionSate ---
     if "dict" not in st.session_state:
         st.session_state.dict = {}
 
@@ -569,9 +578,9 @@ with st.container():
             st.markdown(f"<h3 style='text-align: center; color: white;'>{len(keywords)} segments of {shape[1]} entered</h3>", unsafe_allow_html=True)
 
             if len(keywords) == shape[1] - 1:
-                st.warning('You are 1 segment short! You can continue with 1 segment short, but the last segments in Juyo will be kept empty')
+                st.warning('You are 1 segment short! You can continue with 1 segment short, but the last segments in Juyo will be kept empty', icon='⚠️')
             elif len(keywords) < shape[1]:
-                st.warning(f'You are {shape[1] - len(keywords)} segments short! Please add more segments to match the Juyo segments')
+                st.warning(f'You are {shape[1] - len(keywords)} segments short! Please add more segments to match the Juyo segments',icon='❌')
 
             left_column, right_column = st.columns(2)
 
@@ -596,7 +605,7 @@ with st.container():
             if option == 'Room nights & Revenue':
                 term = "revenue"
                 iData_choice = ["Rev"]
-            else: 
+            else:
                 term = 'ADR'
                 iData_choice = ["ADR"]
             
