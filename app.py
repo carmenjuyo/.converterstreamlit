@@ -743,7 +743,8 @@ with st.container():
                     disabled = 1
 
                 else:
-                    disabled = 0 
+                    disabled = 0
+                    st.info('If it is the first time, it is wise before storing the data, to first run the process to check if the data output is correct.', icon='ℹ️')
 
             if st.button('Store the data for next time', key="store", disabled=disabled): 
                 save_storage()
