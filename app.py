@@ -110,7 +110,7 @@ def run_process(result_list):
         iDataRvT = []
 
         iDays = []
-        sMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
+        sMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec","Input"]
 
         result_list['iSkipper'] = [round(float(i)) for i in result_list['iSkipper']]
         result_list['iStepper'] = [round(float(i)) for i in result_list['iStepper']]
@@ -161,21 +161,24 @@ def run_process(result_list):
                         if x == 0: eMonth = z
 
                 print(f'Current month: {tMonth}')
-
                 leap_year = [int(2024), int(2028), int(2032)]
 
                 if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
                 elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
                 elif tMonth == 'Feb' and st.session_state.year in leap_year: mDay = 29
                 elif tMonth == 'Feb': mDay = 28
-                elif tMonth == 'TheSetCol': 376 #Set collection specials
+                elif tMonth == 'Input': mDay = 376 #Set collection specials
                 else: mDay = 30
 
                 # Here will begin the process of looking for the data in the currect sheet in the for loop
                 # Because it can be stored in rows or columns, the for loop will run 2 times
 
+                # //FIXME Make sure it will skip or add 2 columns with 0 when the segment does not exist.
+                # Because now for The Set Collection it will have to much or to little segments (5ft place segment)
+
                 # //IDEA set variables for [0] or [1] (depending on row or column stored) to only have 2 for loops
                 if result_list['iLoc'][0] == 'Rows':
+                    print(result_list['iTerm'][0])
 
                     for i in range(1, ws.max_row + 1):
                         for j in range(1, ws.max_column + 1):
@@ -193,7 +196,7 @@ def run_process(result_list):
                                         
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
-                    
+
                     if rn_c1 != len(result_list['iSegments:']):
 
                         st.error(f"""
@@ -211,13 +214,12 @@ def run_process(result_list):
                                     rv_c = rv_c + 1
                                     if int(rv_c) in set(result_list['iStepper']):
                                         pass
-                                        
                                     else:
                                         rv_c1 = rv_c1 + 1
                                         cRngv.append(f"{result_list['iTerm'][1]} {ws.cell(i,j)}")
                                         for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                             for cell in row:
-                                                iDataRv.append(round(cell.value,2))
+                                                iDataRv.append(round(int(cell.value),2))
                                         
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
@@ -241,7 +243,6 @@ def run_process(result_list):
                                     rn_c = rn_c + 1
                                     if int(rn_c) in set(result_list['iSkipper']):
                                         pass
-                                        
                                     else:
                                         rn_c1 = rn_c1 + 1
                                         cRngn.append(f"{result_list['iTerm'][0]} {ws.cell(i,j)}")
@@ -269,7 +270,6 @@ def run_process(result_list):
                                     rv_c = rv_c + 1
                                     if int(rv_c) in set(result_list['iStepper']):
                                         pass
-
                                     else:
                                         rv_c1 = rv_c1 + 1
                                         cRngv.append(f"{result_list['iTerm'][1]} {ws.cell(i,j)}")
@@ -307,11 +307,11 @@ def run_process(result_list):
                         if strFind == strStored:
                             
                             if i == y:
-                                #print(f"-- Level & Name match: {strFind} = {i}")
+                                # print(f"-- Level & Name match: {strFind} = {i}")
                                 pass
                             else:
-                                #print(f"- Name match: {strFind} : {i} - {y}")
-                                #print(f"- reordering...")
+                                # print(f"- Name match: {strFind} : {i} - {y}")
+                                # print(f"- reordering...")
                                 
                                 arrTemp = iDataRnT[y + a]
                                 arrTempV = iDataRvT[y + a]
@@ -334,7 +334,7 @@ def run_process(result_list):
 
                 iSort_l.clear()
                 for z in iSort_t: iSort_l.append(z)
-
+            
             # Here will be the two 2d array merged together for later purposes
             # The array will then be put into an dataframe so it can be transposed
             d =[]
@@ -390,8 +390,22 @@ def run_process(result_list):
                     x = x + 2
                     y = t 
 
+            # # //TODO delete rows here that are the total rows of the set collection
+            # # //TODO When a row is delete al the rows go down one!! DON"T FORGET!!!!!!!!!!!!!
+            # if st.session_state.year in leap_year:
+            #     sRows = [36,65,97,128,160,191,223,255,286,318,349] #are not correct
+            # else:
+            #     sRows = [36,65,97,128,160,191,223,255,286,318,349] #are not correct
+            
+            # for x in range(len(sRows)):
+            #     sheet.delete_rows((sRows[x] + x), 1)
+
             # Here is why the user needed to select the starting year. Here it will look at the data and store the dates
-            datetime_object = datetime.strptime(eMonth, "%b")
+            if eMonth == 'Input':
+                datetime_object = datetime.strptime("jan", "%b")
+            else:
+                datetime_object = datetime.strptime(eMonth, "%b")
+                
             month_number = datetime_object.month
 
             datelist = pd.date_range(datetime(st.session_state.year, month_number, 1), periods=sheet.max_row - 1).to_pydatetime().tolist()
@@ -481,7 +495,7 @@ with st.container():
             
             if len(cols) == 0: st.warning('Please press enter after each input.')
             st.write('You selected:', len(cols))
-            if cols[0] == 'input': st.warning('For The Set Collection, you only need to select "input"')
+            if len(cols) == 1 and cols[0] == 'Input': st.warning('For The Set Collection, you only need to select "input"')
 
     with right_column:
         
