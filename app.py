@@ -168,6 +168,7 @@ def run_process(result_list):
                 elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
                 elif tMonth == 'Feb' and st.session_state.year in leap_year: mDay = 29
                 elif tMonth == 'Feb': mDay = 28
+                elif tMonth == 'TheSetCol': 376 #Set collection specials
                 else: mDay = 30
 
                 # Here will begin the process of looking for the data in the currect sheet in the for loop
@@ -302,9 +303,7 @@ def run_process(result_list):
                     for y in range(len(iSort_l)):
 
                         strStored = iSort_l[y]
-
-                        #print(f"L: {i} - {(result_list['iSegments:'][i])} | R: {y} - {(iSort_l[y])}")
-
+                        
                         if strFind == strStored:
                             
                             if i == y:
@@ -482,6 +481,7 @@ with st.container():
             
             if len(cols) == 0: st.warning('Please press enter after each input.')
             st.write('You selected:', len(cols))
+            if cols[0] == 'input': st.warning('For The Set Collection, you only need to select "input"')
 
     with right_column:
         
