@@ -196,8 +196,8 @@ def run_process(result_list):
                                         
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
-
-                    if rn_c1 != len(result_list['iSegments:']):
+                    print(rn_c1)
+                    if rn_c1 != len(result_list['iSegments:']) -1 :
 
                         st.error(f"""
                             ##### Err2: ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -224,7 +224,7 @@ def run_process(result_list):
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
 
-                    if rv_c1 != len(result_list['iSegments:']):
+                    if rv_c1 != len(result_list['iSegments:']) -1 :
 
                         st.error(f"""
                             ##### Err3: ERROR for: {result_list['iTerm'][1]}. In total {len(result_list['iSegments:'])} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -368,9 +368,8 @@ def run_process(result_list):
             s = 1 # SEGMENTS
 
             for i in range(len(iDataRnT)):
-
+                if tMonth == 'Input' and (i == 5): x = x + 2
                 for z in range(len(iDataRnT[i])):
-
                     sheet.cell(row=y, column=x).value=iDataRnT[i][z]
                     if result_list['iDataSt'] == "ADR":
                         sheet.cell(row=y, column=x+1).value=(iDataRnT[i][z] * iDataRvT[i][z])
@@ -390,15 +389,20 @@ def run_process(result_list):
                     x = x + 2
                     y = t 
 
-            # # //TODO delete rows here that are the total rows of the set collection
-            # # //TODO When a row is delete al the rows go down one!! DON"T FORGET!!!!!!!!!!!!!
-            # if st.session_state.year in leap_year:
-            #     sRows = [36,65,97,128,160,191,223,255,286,318,349] #are not correct
-            # else:
-            #     sRows = [36,65,97,128,160,191,223,255,286,318,349] #are not correct
-            
-            # for x in range(len(sRows)):
-            #     sheet.delete_rows((sRows[x] + x), 1)
+
+            if tMonth == 'Input':
+                # sheet.insert_cols(12,2)
+                # # //TODO delete rows here that are the total rows of the set collection
+                # # //TODO When a row is delete al the rows go down one!! DON"T FORGET!!!!!!!!!!!!!
+                # # First row are column names so, the skiped rows needs to be + 1
+                # # 
+                if st.session_state.year in leap_year:
+                    sRows = [36,65,97,128,160,191,223,255,286,318,349] #are not correct
+                else:
+                    sRows = [36,65,97,128,160,191,223,255,286,318,349] #are not correct
+                
+                for x in range(len(sRows)):
+                    sheet.delete_rows((sRows[x] + x), 1)
 
             # Here is why the user needed to select the starting year. Here it will look at the data and store the dates
             if eMonth == 'Input':
