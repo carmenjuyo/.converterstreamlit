@@ -368,7 +368,7 @@ def run_process(result_list):
             s = 1 # SEGMENTS
 
             for i in range(len(iDataRnT)):
-                if tMonth == 'Input' and (i == 5): x = x + 2
+                if (tMonth == 'Input' and i == 5): x = x + 2
                 for z in range(len(iDataRnT[i])):
                     sheet.cell(row=y, column=x).value=iDataRnT[i][z]
                     if result_list['iDataSt'] == "ADR":
