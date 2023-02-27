@@ -114,7 +114,7 @@ def run_process(result_list):
 
         result_list['iSkipper'] = [round(float(i)) for i in result_list['iSkipper']]
         result_list['iStepper'] = [round(float(i)) for i in result_list['iStepper']]
-        
+
         # Adding the selected sheets into a list, in that list, the months will be extracted of the sheets name.
 
         iMonths = [x for x in cols]
@@ -150,7 +150,7 @@ def run_process(result_list):
                 rv_c = 0
                 rn_c1 = 0
                 rv_c1 = 0
-
+  
                 for z in sMonths:
                     try:
                         iDays[x].index(z)
@@ -389,20 +389,17 @@ def run_process(result_list):
                     x = x + 2
                     y = t 
 
-
+            wb.save('temp.xlsx')
             if tMonth == 'Input':
-                # sheet.insert_cols(12,2)
-                # # //TODO delete rows here that are the total rows of the set collection
-                # # //TODO When a row is delete al the rows go down one!! DON"T FORGET!!!!!!!!!!!!!
-                # # First row are column names so, the skiped rows needs to be + 1
-                # # 
+ 
                 if st.session_state.year in leap_year:
-                    sRows = [36,65,97,128,160,191,223,255,286,318,349] #are not correct
+                    sRows = [33, 62, 94, 125, 157, 188, 220, 252, 284, 315, 346]
                 else:
-                    sRows = [36,65,97,128,160,191,223,255,286,318,349] #are not correct
+                    sRows = [33, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336]
+                    #33, 61, 
                 
                 for x in range(len(sRows)):
-                    sheet.delete_rows((sRows[x] + x), 1)
+                    sheet.delete_rows(((sRows[x])), 1)
 
             # Here is why the user needed to select the starting year. Here it will look at the data and store the dates
             if eMonth == 'Input':
