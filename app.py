@@ -389,7 +389,6 @@ def run_process(result_list):
                     x = x + 2
                     y = t 
 
-            wb.save('temp.xlsx')
             if tMonth == 'Input':
  
                 if st.session_state.year in leap_year:
