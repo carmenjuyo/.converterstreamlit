@@ -308,34 +308,17 @@ def run_process(result_list):
             # When a match is found the 2d array will be resorted in the correct order
             a = 0
             for x in range(len(iMonths)):
-                
                 for i in range(len(result_list['iSegments:'])):
-
                     strFind = result_list['iSegments:'][i]
-
                     for y in range(len(iSort_l)):
-
                         strStored = iSort_l[y]
-                        
                         if strFind == strStored:
-                            
                             if i == y:
                                 pass
-                            else:                                
-                                arrTemp = iDataRnT[y + a]
-                                arrTempV = iDataRvT[y + a]
-
-                                iDataRnT[y + a] = iDataRnT[i + a]
-                                iDataRvT[y + a] = iDataRvT[i + a]
-
-                                iDataRnT[i + a] = arrTemp
-                                iDataRvT[i + a] = arrTempV
-
-                                temp = iSort_l[i]
-
-                                iSort_l[i] = result_list['iSegments:'][i]
-                                iSort_l[y] = temp
-                
+                            else: 
+                                iDataRnT[y + a], iDataRnT[i + a] = iDataRnT[i + a], iDataRnT[y + a]
+                                iDataRvT[y + a], iDataRvT[i + a] = iDataRvT[i + a], iDataRvT[y + a]
+                                iSort_l[i], iSort_l[y] = result_list['iSegments:'][i], iSort_l[i]
                 if x == 0:
                     a = len(iSort_l)
                 else:
@@ -343,20 +326,7 @@ def run_process(result_list):
 
                 iSort_l.clear()
                 for z in iSort_t: iSort_l.append(z)
-
-            # //TEST if this works with the way
-            # a = 0
-            # for x, iMonth in enumerate(iMonths):
-            #     for i, (strFind, strStored) in enumerate(zip(result_list['iSegments:'], iSort_l)):
-            #         if strFind == strStored and i != x:
-            #             iDataRnT[i + a], iDataRnT[x + a] = iDataRnT[x + a], iDataRnT[i + a]
-            #             iDataRvT[i + a], iDataRvT[x + a] = iDataRvT[x + a], iDataRvT[i + a]
-            #             iSort_l[i], iSort_l[x] = iSort_l[x], iSort_l[i]
                 
-            #     a += len(iSort_l)
-            #     iSort_l = iSort_t[:]
-
-            
             # Here will be the two 2d array merged together for later purposes
             # The array will then be put into an dataframe so it can be transposed
             d = [iDataRnT[x] for x in range(len(iDataRnT))] + [iDataRvT[x] for x in range(len(iDataRvT))]
