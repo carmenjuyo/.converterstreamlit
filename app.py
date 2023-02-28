@@ -185,7 +185,7 @@ def run_process(result_list):
 
                 # Here will begin the process of looking for the data in the currect sheet in the for loop
                 # Because it can be stored in rows or columns, the for loop will run 2 times
-
+                
                 # //IDEA set variables for [0] or [1] (depending on row or column stored) to only have 2 for loops
                 if result_list['iLoc'][0] == 'Rows':
 
@@ -205,7 +205,7 @@ def run_process(result_list):
                                         
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
-                    
+                    # //TODO here to find a with when it is tsc to have len - 1
                     if rn_c1 != len(result_list['iSegments:']) -1 :
 
                         st.error(f"""
