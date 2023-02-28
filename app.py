@@ -21,6 +21,7 @@ import gspread
 # --- Import data connection modules ---
 from modules.data_process import Gscon
 from modules.data_ret import Gsret
+from modules.data_log import writeFile
 
 st.set_page_config(page_title="Forecast Converter - JUYO", page_icon=Image.open('images/JUYOcon.ico'), layout="wide")
 
@@ -96,7 +97,7 @@ def run_process(result_list):
     
     with st.spinner('runnning process...'):
 
-        print(f"starting process...")
+        writeFile(f"starting process...")
 
         # --- Declaring variables ---
         rn_c = 0
@@ -132,6 +133,7 @@ def run_process(result_list):
 
         # If no terminology is found, the script will end and show a warning
         if len(result_list['iTerm']) == 0:
+            writeFile('Err1')
             st.error('Err1: No terminology filled in. Press "enter" after typing the terminology!', icon='❌')
             return
 
@@ -160,7 +162,6 @@ def run_process(result_list):
                         tMonth = z
                         if x == 0: eMonth = z
 
-                print(f'Current month: {tMonth}')
                 leap_year = [int(2024), int(2028), int(2032)]
 
                 if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
@@ -173,12 +174,8 @@ def run_process(result_list):
                 # Here will begin the process of looking for the data in the currect sheet in the for loop
                 # Because it can be stored in rows or columns, the for loop will run 2 times
 
-                # //FIXME Make sure it will skip or add 2 columns with 0 when the segment does not exist.
-                # Because now for The Set Collection it will have to much or to little segments (5ft place segment)
-
                 # //IDEA set variables for [0] or [1] (depending on row or column stored) to only have 2 for loops
                 if result_list['iLoc'][0] == 'Rows':
-                    print(result_list['iTerm'][0])
 
                     for i in range(1, ws.max_row + 1):
                         for j in range(1, ws.max_column + 1):
@@ -196,7 +193,7 @@ def run_process(result_list):
                                         
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
-                    print(rn_c1)
+                    
                     if rn_c1 != len(result_list['iSegments:']) -1 :
 
                         st.error(f"""
@@ -204,6 +201,7 @@ def run_process(result_list):
                             See below an overview of the segments and their range that were succeeded:
                         """, 
                         icon="❌")
+                        writeFile(f"Err2: ERROR for: {result_list['iTerm'][0]}")
                         st.json(cRngn, expanded=True)
                         return
 
@@ -231,6 +229,7 @@ def run_process(result_list):
                             See below an overview of the segments and their range that were succeeded:
                         """, 
                         icon="❌")
+                        writeFile(f"Err3: ERROR for: {result_list['iTerm'][1]}")
                         st.json(cRngv, expanded=True)
                         return
 
@@ -260,6 +259,7 @@ def run_process(result_list):
                             See below an overview of the segments and their range that were succeeded:
                         """, 
                         icon="❌")
+                        writeFile(f"ERROR for: {result_list['iTerm'][0]}")
                         st.json(cRngn, expanded=True)
                         return
 
@@ -287,6 +287,7 @@ def run_process(result_list):
                             See below an overview of the segments and their range that were succeeded:
                         """, 
                         icon="❌")
+                        writeFile(f"Err2: ERROR for: {result_list['iTerm'][1]}")
                         st.json(cRngv, expanded=True)
                         return
 
@@ -307,12 +308,8 @@ def run_process(result_list):
                         if strFind == strStored:
                             
                             if i == y:
-                                # print(f"-- Level & Name match: {strFind} = {i}")
                                 pass
-                            else:
-                                # print(f"- Name match: {strFind} : {i} - {y}")
-                                # print(f"- reordering...")
-                                
+                            else:                                
                                 arrTemp = iDataRnT[y + a]
                                 arrTempV = iDataRvT[y + a]
 
@@ -395,7 +392,6 @@ def run_process(result_list):
                     sRows = [33, 62, 94, 125, 157, 188, 220, 252, 284, 315, 346]
                 else:
                     sRows = [33, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336]
-                    #33, 61, 
                 
                 for x in range(len(sRows)):
                     sheet.delete_rows(((sRows[x])), 1)
@@ -441,6 +437,7 @@ def run_process(result_list):
 
             sh.sheet1.update_cell(a + 1, 1, f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} {datetime.utcnow()}')
             st.error(f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} | UTC: {datetime.utcnow()}')
+            writeFile(f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} | UTC: {datetime.utcnow()}')
             return
 
     st.success('Process ran!')
@@ -545,10 +542,7 @@ with st.container():
                 st.json(st.session_state.dict, expanded=False)    
             else: pass
 
-            if bool(st.session_state.dict) == False:
-                disabled = 1
-            else:
-                disabled = 0
+            disabled = not bool(st.session_state.dict)
 
             st.write('## Select starting year of first sheet.')
 
