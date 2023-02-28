@@ -9,6 +9,7 @@ import sys, os
 import random
 import string
 import json
+import calendar
 
 # --- Load external modules ---
 from fuzzywuzzy import process
@@ -89,7 +90,7 @@ def save_storage():
         st.write(f'''
             #### Here is your password: 
             {result_str}
-            ##### Save it well.
+            ##### Save it.
             ''')
         st.success('Input saved!')
 
@@ -162,14 +163,25 @@ def run_process(result_list):
                         tMonth = z
                         if x == 0: eMonth = z
 
-                leap_year = [int(2024), int(2028), int(2032)]
+                days_in_month = {
+                    'Jan': 31,
+                    'Feb': 28,
+                    'Mar': 31,
+                    'Apr': 30,
+                    'May': 31,
+                    'Jun': 30,
+                    'Jul': 31,
+                    'Aug': 31,
+                    'Sep': 30,
+                    'Oct': 31,
+                    'Nov': 30,
+                    'Dec': 31,
+                    'Input': 376
+                }
 
-                if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
-                elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
-                elif tMonth == 'Feb' and st.session_state.year in leap_year: mDay = 29
-                elif tMonth == 'Feb': mDay = 28
-                elif tMonth == 'Input': mDay = 376 #Set collection specials
-                else: mDay = 30
+                mDay = days_in_month.get(tMonth, 30)
+                if tMonth == 'Feb' and calendar.isleap(st.session_state.year):
+                    mDay = 29
 
                 # Here will begin the process of looking for the data in the currect sheet in the for loop
                 # Because it can be stored in rows or columns, the for loop will run 2 times
@@ -388,7 +400,7 @@ def run_process(result_list):
 
             if tMonth == 'Input':
  
-                if st.session_state.year in leap_year:
+                if calendar.isleap(st.session_state.year):
                     sRows = [33, 62, 94, 125, 157, 188, 220, 252, 284, 315, 346]
                 else:
                     sRows = [33, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336]
