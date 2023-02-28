@@ -343,14 +343,23 @@ def run_process(result_list):
 
                 iSort_l.clear()
                 for z in iSort_t: iSort_l.append(z)
+
+            # //TEST if this works with the way
+            # a = 0
+            # for x, iMonth in enumerate(iMonths):
+            #     for i, (strFind, strStored) in enumerate(zip(result_list['iSegments:'], iSort_l)):
+            #         if strFind == strStored and i != x:
+            #             iDataRnT[i + a], iDataRnT[x + a] = iDataRnT[x + a], iDataRnT[i + a]
+            #             iDataRvT[i + a], iDataRvT[x + a] = iDataRvT[x + a], iDataRvT[i + a]
+            #             iSort_l[i], iSort_l[x] = iSort_l[x], iSort_l[i]
+                
+            #     a += len(iSort_l)
+            #     iSort_l = iSort_t[:]
+
             
             # Here will be the two 2d array merged together for later purposes
             # The array will then be put into an dataframe so it can be transposed
-            d =[]
-
-            for x in range(len(iDataRnT)):
-                d.append(iDataRnT[x])
-                d.append(iDataRvT[x])
+            d = [iDataRnT[x] for x in range(len(iDataRnT))] + [iDataRvT[x] for x in range(len(iDataRvT))]
 
             df2 = pd.DataFrame(data=d)
 
@@ -399,22 +408,13 @@ def run_process(result_list):
                     y = t 
 
             if tMonth == 'Input':
- 
-                if calendar.isleap(st.session_state.year):
-                    sRows = [33, 62, 94, 125, 157, 188, 220, 252, 284, 315, 346]
-                else:
-                    sRows = [33, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336]
-                
+                sRows = [33, 62, 94, 125, 157, 188, 220, 252, 284, 315, 346] if calendar.isleap(st.session_state.year) else [33, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336]
                 for x in range(len(sRows)):
-                    sheet.delete_rows(((sRows[x])), 1)
+                    sheet.delete_rows((sRows[x]), 1)
 
             # Here is why the user needed to select the starting year. Here it will look at the data and store the dates
-            if eMonth == 'Input':
-                datetime_object = datetime.strptime("jan", "%b")
-            else:
-                datetime_object = datetime.strptime(eMonth, "%b")
-                
-            month_number = datetime_object.month
+
+            month_number = datetime.strptime(eMonth, "%b").month if eMonth != 'Input' else 1
 
             datelist = pd.date_range(datetime(st.session_state.year, month_number, 1), periods=sheet.max_row - 1).to_pydatetime().tolist()
             
