@@ -186,7 +186,6 @@ def run_process(result_list):
                 # Here will begin the process of looking for the data in the currect sheet in the for loop
                 # Because it can be stored in rows or columns, the for loop will run 2 times
                 
-                # //IDEA set variables for [0] or [1] (depending on row or column stored) to only have 2 for loops
                 if result_list['iLoc'][0] == 'Rows':
 
                     for i in range(1, ws.max_row + 1):
@@ -205,8 +204,8 @@ def run_process(result_list):
                                         
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
-                    # //TODO here to find a with when it is tsc to have len - 1
-                    if rn_c1 != len(result_list['iSegments:']) -1 :
+
+                    if rn_c1 != len(result_list['iSegments:']) - (0 if tMonth == 'Input' else 1):
 
                         st.error(f"""
                             ##### Err2: ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -234,7 +233,7 @@ def run_process(result_list):
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
 
-                    if rv_c1 != len(result_list['iSegments:']) -1 :
+                    if rv_c1 != len(result_list['iSegments:']) - (0 if tMonth == 'Input' else 1):
 
                         st.error(f"""
                             ##### Err3: ERROR for: {result_list['iTerm'][1]}. In total {len(result_list['iSegments:'])} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -264,7 +263,7 @@ def run_process(result_list):
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
 
-                    if rn_c1 != len(result_list['iSegments:']):
+                    if rn_c1 != len(result_list['iSegments:']) - (0 if tMonth == 'Input' else 1):
                         
                         st.error(f"""
                             ##### ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -292,7 +291,7 @@ def run_process(result_list):
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
 
-                    if rv_c1 != len(result_list['iSegments:']):
+                    if rv_c1 != len(result_list['iSegments:']) - (0 if tMonth == 'Input' else 1):
                         
                         st.error(f"""
                             ##### ERROR for: {result_list['iTerm'][1]}. In total {len(result_list['iSegments:'])} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
