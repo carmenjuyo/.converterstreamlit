@@ -185,7 +185,10 @@ def run_process(result_list):
 
                 # Here will begin the process of looking for the data in the currect sheet in the for loop
                 # Because it can be stored in rows or columns, the for loop will run 2 times
-                
+
+                # //TODO Make sure the non-revenue segment has a seperate array to add it later
+                # //TODO - (1 if tMonth == 'Input' else 0): should be gone as the JUYO file changed
+
                 if result_list['iLoc'][0] == 'Rows':
 
                     for i in range(1, ws.max_row + 1):
@@ -201,12 +204,14 @@ def run_process(result_list):
                                         for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                             for cell in row:
                                                 iDataRn.append(cell.value)
-                                        
+                                        #iDataRn = [cell.value for row in ws.iter_rows(min_row=i+1, max_row=i+mDay, min_col=j, max_col=j) for cell in row]
+
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
 
-                    if rn_c1 != len(result_list['iSegments:']) - (0 if tMonth == 'Input' else 1):
-
+                    if rn_c1 != len(result_list['iSegments:']) - (1 if tMonth == 'Input' else 0):
+                        print(rn_c1)
+                        print(len(result_list['iSegments:']))
                         st.error(f"""
                             ##### Err2: ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
                             See below an overview of the segments and their range that were succeeded:
@@ -233,7 +238,7 @@ def run_process(result_list):
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
 
-                    if rv_c1 != len(result_list['iSegments:']) - (0 if tMonth == 'Input' else 1):
+                    if rv_c1 != len(result_list['iSegments:']) - (1 if tMonth == 'Input' else 0):
 
                         st.error(f"""
                             ##### Err3: ERROR for: {result_list['iTerm'][1]}. In total {len(result_list['iSegments:'])} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -263,8 +268,9 @@ def run_process(result_list):
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
 
-                    if rn_c1 != len(result_list['iSegments:']) - (0 if tMonth == 'Input' else 1):
-                        
+                    if rn_c1 != len(result_list['iSegments:']) - (1 if tMonth == 'Input' else 0):
+                        print(rn_c1)
+                        print(len(result_list['iSegments:']))
                         st.error(f"""
                             ##### ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
                             See below an overview of the segments and their range that were succeeded:
@@ -318,11 +324,7 @@ def run_process(result_list):
                                 iDataRnT[y + a], iDataRnT[i + a] = iDataRnT[i + a], iDataRnT[y + a]
                                 iDataRvT[y + a], iDataRvT[i + a] = iDataRvT[i + a], iDataRvT[y + a]
                                 iSort_l[i], iSort_l[y] = result_list['iSegments:'][i], iSort_l[i]
-                if x == 0:
-                    a = len(iSort_l)
-                else:
-                    a = a + len(iSort_l)
-
+                a = len(iSort_l) if x == 0 else (a + len(iSort_l))
                 iSort_l.clear()
                 for z in iSort_t: iSort_l.append(z)
                 
@@ -340,10 +342,8 @@ def run_process(result_list):
             sheet.title='sheet0'
 
             # Here will the columns of the Juyo file be stored
-            y = 1
-            for x in range(len(all_columns)):
-                sheet.cell(row=1, column=y).value=all_columns[x]
-                y = y + 1
+            for idx, col in enumerate(all_columns):
+                sheet.cell(row=1, column=idx+1).value = col
 
             # the next process is for storing the data in the correct order for the correct months
             # Because the array is already sorted correctly due to the sorting process, it now only has to be put nice together
@@ -354,6 +354,10 @@ def run_process(result_list):
             t = 2 # ROW
             s = 1 # SEGMENTS
 
+            # //TODO 
+            # Kan ik hier niet gewoon doen als i op de juiste plek is van complementatry dat die dan die i + de juiste standard column doet?
+            # Die blijft altijd op de juiste plek staan en hoef ik minder aanpassingen te maken
+            # Maar dan moet ik die eerste columen nog wel eerst ergens anders hebben opgeslagen in een array (moet ik ergens vandaan halen)
             for i in range(len(iDataRnT)):
                 if (tMonth == 'Input' and i == 5): x = x + 2
                 for z in range(len(iDataRnT[i])):
