@@ -204,16 +204,17 @@ def run_process(result_list):
                                         for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                             for cell in row:
                                                 iDataRn.append(cell.value)
-                                        #iDataRn = [cell.value for row in ws.iter_rows(min_row=i+1, max_row=i+mDay, min_col=j, max_col=j) for cell in row]
+                                        # iDataRn = [cell.value for row in ws.iter_rows(min_row=i+1, max_row=i+mDay, min_col=j, max_col=j) for cell in row]
 
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
-
-                    if rn_c1 != len(result_list['iSegments:']) - (1 if tMonth == 'Input' else 0):
+                    print(iDataRnT)
+                    # //BUG which if they have 1 segment short?
+                    if rn_c1 != len(result_list['iSegments:']): #- (1 if tMonth == 'Input' else 0):
                         print(rn_c1)
                         print(len(result_list['iSegments:']))
                         st.error(f"""
-                            ##### Err2: ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
+                            ##### Err2: ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c1} segments were measured in the month / sheet: {iMonths[x]}.
                             See below an overview of the segments and their range that were succeeded:
                         """, 
                         icon="❌")
@@ -297,7 +298,7 @@ def run_process(result_list):
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
 
-                    if rv_c1 != len(result_list['iSegments:']) - (0 if tMonth == 'Input' else 1):
+                    if rv_c1 != len(result_list['iSegments:']) - (1 if tMonth == 'Input' else 0):
                         
                         st.error(f"""
                             ##### ERROR for: {result_list['iTerm'][1]}. In total {len(result_list['iSegments:'])} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
