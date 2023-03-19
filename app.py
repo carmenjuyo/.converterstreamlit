@@ -9,6 +9,7 @@ import sys, os
 import random
 import string
 import json
+import calendar
 
 # --- Load external modules ---
 from fuzzywuzzy import process
@@ -21,6 +22,7 @@ import gspread
 # --- Import data connection modules ---
 from modules.data_process import Gscon
 from modules.data_ret import Gsret
+from modules.data_log import writeFile
 
 st.set_page_config(page_title="Forecast Converter - JUYO", page_icon=Image.open('images/JUYOcon.ico'), layout="wide")
 
@@ -88,7 +90,7 @@ def save_storage():
         st.write(f'''
             #### Here is your password: 
             {result_str}
-            ##### Save it well.
+            ##### Save it.
             ''')
         st.success('Input saved!')
 
@@ -96,7 +98,7 @@ def run_process(result_list):
     
     with st.spinner('runnning process...'):
 
-        print(f"starting process...")
+        writeFile(f"starting process...")
 
         # --- Declaring variables ---
         rn_c = 0
@@ -110,11 +112,11 @@ def run_process(result_list):
         iDataRvT = []
 
         iDays = []
-        sMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec"]
+        sMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Sept","Oct","Nov","Dec","Input"]
 
         result_list['iSkipper'] = [round(float(i)) for i in result_list['iSkipper']]
         result_list['iStepper'] = [round(float(i)) for i in result_list['iStepper']]
-        
+
         # Adding the selected sheets into a list, in that list, the months will be extracted of the sheets name.
 
         iMonths = [x for x in cols]
@@ -132,6 +134,7 @@ def run_process(result_list):
 
         # If no terminology is found, the script will end and show a warning
         if len(result_list['iTerm']) == 0:
+            writeFile('Err1')
             st.error('Err1: No terminology filled in. Press "enter" after typing the terminology!', icon='❌')
             return
 
@@ -150,7 +153,7 @@ def run_process(result_list):
                 rv_c = 0
                 rn_c1 = 0
                 rv_c1 = 0
-
+  
                 for z in sMonths:
                     try:
                         iDays[x].index(z)
@@ -160,20 +163,29 @@ def run_process(result_list):
                         tMonth = z
                         if x == 0: eMonth = z
 
-                print(f'Current month: {tMonth}')
+                days_in_month = {
+                    'Jan': 31,
+                    'Feb': 28,
+                    'Mar': 31,
+                    'Apr': 30,
+                    'May': 31,
+                    'Jun': 30,
+                    'Jul': 31,
+                    'Aug': 31,
+                    'Sep': 30,
+                    'Oct': 31,
+                    'Nov': 30,
+                    'Dec': 31,
+                    'Input': 376
+                }
 
-                leap_year = [int(2024), int(2028), int(2032)]
-
-                if tMonth == 'Jan' or tMonth == 'Mar' or tMonth == 'May' or tMonth == 'Jul' or tMonth == 'Aug' or tMonth == 'Oct' or tMonth == 'Dec': mDay = 31
-                elif tMonth == 'Apr' or tMonth == 'Jun' or tMonth == 'Sep' or tMonth == 'Sept' or tMonth == 'Nov': mDay = 30
-                elif tMonth == 'Feb' and st.session_state.year in leap_year: mDay = 29
-                elif tMonth == 'Feb': mDay = 28
-                else: mDay = 30
+                mDay = days_in_month.get(tMonth, 30)
+                if tMonth == 'Feb' and calendar.isleap(st.session_state.year):
+                    mDay = 29
 
                 # Here will begin the process of looking for the data in the currect sheet in the for loop
                 # Because it can be stored in rows or columns, the for loop will run 2 times
 
-                # //IDEA set variables for [0] or [1] (depending on row or column stored) to only have 2 for loops
                 if result_list['iLoc'][0] == 'Rows':
 
                     for i in range(1, ws.max_row + 1):
@@ -189,17 +201,20 @@ def run_process(result_list):
                                         for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                             for cell in row:
                                                 iDataRn.append(cell.value)
-                                        
+                                        # iDataRn = [cell.value for row in ws.iter_rows(min_row=i+1, max_row=i+mDay, min_col=j, max_col=j) for cell in row]
+
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
                     
                     if rn_c1 != len(result_list['iSegments:']):
-
+                        print(rn_c1)
+                        print(len(result_list['iSegments:']))
                         st.error(f"""
-                            ##### Err2: ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
+                            ##### Err2: ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c1} segments were measured in the month / sheet: {iMonths[x]}.
                             See below an overview of the segments and their range that were succeeded:
                         """, 
                         icon="❌")
+                        writeFile(f"Err2: ERROR for: {result_list['iTerm'][0]}")
                         st.json(cRngn, expanded=True)
                         return
 
@@ -210,13 +225,12 @@ def run_process(result_list):
                                     rv_c = rv_c + 1
                                     if int(rv_c) in set(result_list['iStepper']):
                                         pass
-                                        
                                     else:
                                         rv_c1 = rv_c1 + 1
                                         cRngv.append(f"{result_list['iTerm'][1]} {ws.cell(i,j)}")
                                         for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                             for cell in row:
-                                                iDataRv.append(round(cell.value,2))
+                                                iDataRv.append(round(int(cell.value),2))
                                         
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
@@ -228,6 +242,7 @@ def run_process(result_list):
                             See below an overview of the segments and their range that were succeeded:
                         """, 
                         icon="❌")
+                        writeFile(f"Err3: ERROR for: {result_list['iTerm'][1]}")
                         st.json(cRngv, expanded=True)
                         return
 
@@ -240,7 +255,6 @@ def run_process(result_list):
                                     rn_c = rn_c + 1
                                     if int(rn_c) in set(result_list['iSkipper']):
                                         pass
-                                        
                                     else:
                                         rn_c1 = rn_c1 + 1
                                         cRngn.append(f"{result_list['iTerm'][0]} {ws.cell(i,j)}")
@@ -252,12 +266,14 @@ def run_process(result_list):
                                         iDataRn = []
 
                     if rn_c1 != len(result_list['iSegments:']):
-                        
+                        print(rn_c1)
+                        print(len(result_list['iSegments:']))
                         st.error(f"""
                             ##### ERROR for: {result_list['iTerm'][0]}. In total {len(result_list['iSegments:'])} segments entered. But {rn_c} segments were measured in the month / sheet: {iMonths[x]}.
                             See below an overview of the segments and their range that were succeeded:
                         """, 
                         icon="❌")
+                        writeFile(f"ERROR for: {result_list['iTerm'][0]}")
                         st.json(cRngn, expanded=True)
                         return
 
@@ -268,7 +284,6 @@ def run_process(result_list):
                                     rv_c = rv_c + 1
                                     if int(rv_c) in set(result_list['iStepper']):
                                         pass
-
                                     else:
                                         rv_c1 = rv_c1 + 1
                                         cRngv.append(f"{result_list['iTerm'][1]} {ws.cell(i,j)}")
@@ -286,6 +301,7 @@ def run_process(result_list):
                             See below an overview of the segments and their range that were succeeded:
                         """, 
                         icon="❌")
+                        writeFile(f"Err2: ERROR for: {result_list['iTerm'][1]}")
                         st.json(cRngv, expanded=True)
                         return
 
@@ -294,55 +310,24 @@ def run_process(result_list):
             # When a match is found the 2d array will be resorted in the correct order
             a = 0
             for x in range(len(iMonths)):
-                
                 for i in range(len(result_list['iSegments:'])):
-
                     strFind = result_list['iSegments:'][i]
-
                     for y in range(len(iSort_l)):
-
                         strStored = iSort_l[y]
-
-                        #print(f"L: {i} - {(result_list['iSegments:'][i])} | R: {y} - {(iSort_l[y])}")
-
                         if strFind == strStored:
-                            
                             if i == y:
-                                #print(f"-- Level & Name match: {strFind} = {i}")
                                 pass
-                            else:
-                                #print(f"- Name match: {strFind} : {i} - {y}")
-                                #print(f"- reordering...")
-                                
-                                arrTemp = iDataRnT[y + a]
-                                arrTempV = iDataRvT[y + a]
-
-                                iDataRnT[y + a] = iDataRnT[i + a]
-                                iDataRvT[y + a] = iDataRvT[i + a]
-
-                                iDataRnT[i + a] = arrTemp
-                                iDataRvT[i + a] = arrTempV
-
-                                temp = iSort_l[i]
-
-                                iSort_l[i] = result_list['iSegments:'][i]
-                                iSort_l[y] = temp
-                
-                if x == 0:
-                    a = len(iSort_l)
-                else:
-                    a = a + len(iSort_l)
-
+                            else: 
+                                iDataRnT[y + a], iDataRnT[i + a] = iDataRnT[i + a], iDataRnT[y + a]
+                                iDataRvT[y + a], iDataRvT[i + a] = iDataRvT[i + a], iDataRvT[y + a]
+                                iSort_l[i], iSort_l[y] = result_list['iSegments:'][i], iSort_l[i]
+                a = len(iSort_l) if x == 0 else (a + len(iSort_l))
                 iSort_l.clear()
                 for z in iSort_t: iSort_l.append(z)
-
+                
             # Here will be the two 2d array merged together for later purposes
             # The array will then be put into an dataframe so it can be transposed
-            d =[]
-
-            for x in range(len(iDataRnT)):
-                d.append(iDataRnT[x])
-                d.append(iDataRvT[x])
+            d = [iDataRnT[x] for x in range(len(iDataRnT))] + [iDataRvT[x] for x in range(len(iDataRvT))]
 
             df2 = pd.DataFrame(data=d)
 
@@ -354,10 +339,8 @@ def run_process(result_list):
             sheet.title='sheet0'
 
             # Here will the columns of the Juyo file be stored
-            y = 1
-            for x in range(len(all_columns)):
-                sheet.cell(row=1, column=y).value=all_columns[x]
-                y = y + 1
+            for idx, col in enumerate(all_columns):
+                sheet.cell(row=1, column=idx+1).value = col
 
             # the next process is for storing the data in the correct order for the correct months
             # Because the array is already sorted correctly due to the sorting process, it now only has to be put nice together
@@ -369,9 +352,7 @@ def run_process(result_list):
             s = 1 # SEGMENTS
 
             for i in range(len(iDataRnT)):
-
                 for z in range(len(iDataRnT[i])):
-
                     sheet.cell(row=y, column=x).value=iDataRnT[i][z]
                     if result_list['iDataSt'] == "ADR":
                         sheet.cell(row=y, column=x+1).value=(iDataRnT[i][z] * iDataRvT[i][z])
@@ -391,9 +372,14 @@ def run_process(result_list):
                     x = x + 2
                     y = t 
 
+            if tMonth == 'Input':
+                sRows = [33, 62, 94, 125, 157, 188, 220, 252, 284, 315, 346] if calendar.isleap(st.session_state.year) else [33, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336]
+                for x in range(len(sRows)):
+                    sheet.delete_rows((sRows[x]), 1)
+
             # Here is why the user needed to select the starting year. Here it will look at the data and store the dates
-            datetime_object = datetime.strptime(eMonth, "%b")
-            month_number = datetime_object.month
+
+            month_number = datetime.strptime(eMonth, "%b").month if eMonth != 'Input' else 1
 
             datelist = pd.date_range(datetime(st.session_state.year, month_number, 1), periods=sheet.max_row - 1).to_pydatetime().tolist()
             
@@ -428,6 +414,7 @@ def run_process(result_list):
 
             sh.sheet1.update_cell(a + 1, 1, f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} {datetime.utcnow()}')
             st.error(f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} | UTC: {datetime.utcnow()}')
+            writeFile(f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname} | UTC: {datetime.utcnow()}')
             return
 
     st.success('Process ran!')
@@ -482,6 +469,7 @@ with st.container():
             
             if len(cols) == 0: st.warning('Please press enter after each input.')
             st.write('You selected:', len(cols))
+            if len(cols) == 1 and cols[0] == 'Input': st.warning('For The Set Collection, you only need to select "input"')
 
     with right_column:
         
@@ -525,16 +513,12 @@ with st.container():
                 result_list = Gsret.retreive_data(key_s)
                 st.session_state.dict = result_list
             
-            # //BUG displays 2 times success, raises because of imported module (29/12/2022 17:16 can be fixed after merge)
             if not bool(st.session_state.dict) == False:
                 st.success(f'password: {key_s} succesfull', icon='✅')
                 st.json(st.session_state.dict, expanded=False)    
             else: pass
 
-            if bool(st.session_state.dict) == False:
-                disabled = 1
-            else:
-                disabled = 0
+            disabled = not bool(st.session_state.dict)
 
             st.write('## Select starting year of first sheet.')
 
