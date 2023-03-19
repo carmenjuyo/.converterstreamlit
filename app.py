@@ -186,9 +186,6 @@ def run_process(result_list):
                 # Here will begin the process of looking for the data in the currect sheet in the for loop
                 # Because it can be stored in rows or columns, the for loop will run 2 times
 
-                # //TODO Make sure the non-revenue segment has a seperate array to add it later
-                # //TODO - (1 if tMonth == 'Input' else 0): should be gone as the JUYO file changed
-
                 if result_list['iLoc'][0] == 'Rows':
 
                     for i in range(1, ws.max_row + 1):
@@ -208,9 +205,8 @@ def run_process(result_list):
 
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
-                    print(iDataRnT)
-                    # //BUG which if they have 1 segment short?
-                    if rn_c1 != len(result_list['iSegments:']): #- (1 if tMonth == 'Input' else 0):
+                    
+                    if rn_c1 != len(result_list['iSegments:']):
                         print(rn_c1)
                         print(len(result_list['iSegments:']))
                         st.error(f"""
@@ -239,7 +235,7 @@ def run_process(result_list):
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
 
-                    if rv_c1 != len(result_list['iSegments:']) - (1 if tMonth == 'Input' else 0):
+                    if rv_c1 != len(result_list['iSegments:']):
 
                         st.error(f"""
                             ##### Err3: ERROR for: {result_list['iTerm'][1]}. In total {len(result_list['iSegments:'])} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -269,7 +265,7 @@ def run_process(result_list):
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
 
-                    if rn_c1 != len(result_list['iSegments:']) - (1 if tMonth == 'Input' else 0):
+                    if rn_c1 != len(result_list['iSegments:']):
                         print(rn_c1)
                         print(len(result_list['iSegments:']))
                         st.error(f"""
@@ -298,7 +294,7 @@ def run_process(result_list):
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
 
-                    if rv_c1 != len(result_list['iSegments:']) - (1 if tMonth == 'Input' else 0):
+                    if rv_c1 != len(result_list['iSegments:']):
                         
                         st.error(f"""
                             ##### ERROR for: {result_list['iTerm'][1]}. In total {len(result_list['iSegments:'])} segments entered. But {rv_c} segments were measured in the month / sheet: {iMonths[x]}.
@@ -355,12 +351,7 @@ def run_process(result_list):
             t = 2 # ROW
             s = 1 # SEGMENTS
 
-            # //TODO 
-            # Kan ik hier niet gewoon doen als i op de juiste plek is van complementatry dat die dan die i + de juiste standard column doet?
-            # Die blijft altijd op de juiste plek staan en hoef ik minder aanpassingen te maken
-            # Maar dan moet ik die eerste columen nog wel eerst ergens anders hebben opgeslagen in een array (moet ik ergens vandaan halen)
             for i in range(len(iDataRnT)):
-                if (tMonth == 'Input' and i == 5): x = x + 2
                 for z in range(len(iDataRnT[i])):
                     sheet.cell(row=y, column=x).value=iDataRnT[i][z]
                     if result_list['iDataSt'] == "ADR":
@@ -522,7 +513,6 @@ with st.container():
                 result_list = Gsret.retreive_data(key_s)
                 st.session_state.dict = result_list
             
-            # //BUG displays 2 times success, raises because of imported module (29/12/2022 17:16 can be fixed after merge)
             if not bool(st.session_state.dict) == False:
                 st.success(f'password: {key_s} succesfull', icon='✅')
                 st.json(st.session_state.dict, expanded=False)    
