@@ -198,10 +198,17 @@ def run_process(result_list):
                                     else:
                                         rn_c1 = rn_c1 + 1
                                         cRngn.append(f"{result_list['iTerm'][0]} {ws.cell(i,j)}")
+                                        j = int(j)
+                                        j += 4 if tMonth == 'Input' else 0
                                         for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                             for cell in row:
-                                                iDataRn.append(cell.value)
-                                        # iDataRn = [cell.value for row in ws.iter_rows(min_row=i+1, max_row=i+mDay, min_col=j, max_col=j) for cell in row]
+                                                if float(cell.value) < 1 and float(cell.value) > 0.49:
+                                                    cell.value = 1
+                                                if not cell.value:
+                                                    iDataRn.append(round(0, 2))
+                                                else:
+                                                    iDataRn.append(round(float(cell.value), 0))
+                                        j -= 4 if tMonth == 'Input' else 0
 
                                         iDataRnT.append(iDataRn)
                                         iDataRn = []
@@ -228,10 +235,16 @@ def run_process(result_list):
                                     else:
                                         rv_c1 = rv_c1 + 1
                                         cRngv.append(f"{result_list['iTerm'][1]} {ws.cell(i,j)}")
+                                        j = int(j)
+                                        j += 4 if tMonth == 'Input' else 0
                                         for row in ws.iter_rows(min_row=i + 1,max_row=i + mDay, min_col=j, max_col=j):
                                             for cell in row:
-                                                iDataRv.append(round(int(cell.value),2))
-                                        
+                                                if not cell.value:
+                                                    iDataRv.append(round(0, 2))
+                                                else:
+                                                    iDataRv.append(round(int(cell.value), 2))
+                                        j -= 4 if tMonth == 'Input' else 0
+
                                         iDataRvT.append(iDataRv)
                                         iDataRv = []
 
@@ -637,13 +650,13 @@ with st.container():
 
             if storage == 'Rows':
                 
-                st.write(f''' ### In which row can the terminology of room nigts and {term} be found?"''')
+                st.write(f''' ### In which row can the terminology of room nights and {term} be found?"''')
 
                 row_n = st.text_input(f"x", label_visibility='collapsed')
             
             elif storage == 'Columns':
 
-                st.write(f''' ### In which row can the terminology of room nigts and {term} be found?"''')
+                st.write(f''' ### In which row can the terminology of room nights and {term} be found?"''')
 
                 row_n = st.text_input(f"x", label_visibility='collapsed').lower()
                 try: row_n = ord(row_n) - 96
