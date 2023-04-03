@@ -684,7 +684,7 @@ with st.container():
                         text='Press enter to add more',
                         suggestions=['1', '2', '3', 
                                     '4', '5', '6'],
-                        maxtags = 10,
+                        maxtags = 100,
                         key='3')
 
                 with r_c:
@@ -693,7 +693,7 @@ with st.container():
                         text='Press enter to add more',
                         suggestions=['1', '2', '3', 
                                     '4', '5', '6'],
-                        maxtags = 10,
+                        maxtags = 100,
                         key='4')  
 
             else:
