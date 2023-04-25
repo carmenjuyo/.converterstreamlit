@@ -656,7 +656,7 @@ with st.container():
             
             elif storage == 'Columns':
 
-                st.write(f''' ### In which row can the terminology of room nights and {term} be found?"''')
+                st.write(f''' ### In which columns can the terminology of room nights and {term} be found?"''')
 
                 row_n = st.text_input(f"x", label_visibility='collapsed').lower()
                 try: row_n = ord(row_n) - 96
